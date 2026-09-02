@@ -1,0 +1,3100 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>《你 + AI = 未来》· 大学新生 AI 科普讲座</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,500;0,600;0,700;0,800;0,900;1,400;1,700&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,500;0,8..60,600;1,8..60,400&family=IBM+Plex+Mono:wght@300;400;500;600&family=Noto+Serif+SC:wght@300;400;500;600;700;900&family=Noto+Sans+SC:wght@300;400;500;700;900&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* ============ 主题色(默认:🖋 墨水经典) ============
+       切换主题:从 references/themes.md 复制对应的 :root 块
+       整体替换这几行(--ink / --ink-rgb / --paper / --paper-rgb)
+       其他地方散落的 rgba() 都走 var(--ink-rgb) / var(--paper-rgb),无需逐处改 */
+        /* ============ 主题色：🌊 靛蓝瓷 ============
+       深靛蓝 + 瓷白，冷静理性，配蓝紫/青/少量珊瑚橙作 accent */
+    --ink:#0a1f3d;
+    --ink-rgb:10,31,61;
+    --paper:#f1f3f5;
+    --paper-rgb:241,243,245;
+    --paper-tint:#e4e8ec;
+    --ink-tint:#152a4a;
+    /* 强调：珊瑚橙（少用，作点缀） */
+    --accent:#ff6b4a;
+    --accent-rgb:255,107,74;
+    --violet:#6f5cff;
+    --cyan:#3ec0ff;
+
+    /* ============ 字体(跨主题固定) ============ */
+    --mono:"IBM Plex Mono",ui-monospace,monospace;
+    --serif-en:"Playfair Display","Source Serif 4",Georgia,serif;
+    --serif-body-en:"Source Serif 4",Georgia,serif;
+    --serif-zh:"Noto Serif SC",source-han-serif-sc,serif;
+    --sans-zh:"Noto Sans SC",source-han-sans-sc,sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{width:100%;height:100%;overflow:hidden;background:var(--ink);color:var(--paper);font-family:var(--sans-zh);-webkit-font-smoothing:antialiased;text-rendering:optimizeLegibility}
+
+  /* ============ WebGL 双背景 ============ */
+  canvas.bg{position:fixed;inset:0;width:100vw;height:100vh;z-index:0;display:block;transition:opacity 1.2s ease}
+  canvas#bg-light{opacity:0}
+  canvas#bg-dark{opacity:1}
+  body.light-bg canvas#bg-light{opacity:1}
+  body.light-bg canvas#bg-dark{opacity:0}
+  body.low-power canvas.bg{display:none!important}
+
+  /* ============ Deck 容器 + 翻页 ============ */
+  /* width: NSLIDES * 100vw，会在 JS 里动态矫正 */
+  #deck{position:fixed;inset:0;width:10000vw;height:100vh;display:flex;flex-wrap:nowrap;transition:transform .9s cubic-bezier(.77,0,.175,1);z-index:10;will-change:transform}
+  .slide{width:100vw;height:100vh;flex:0 0 100vw;position:relative;padding:6vh 6vw 10vh 6vw;display:flex;flex-direction:column;overflow:hidden}
+  .slide.light{color:var(--ink);background:var(--paper)}
+  .slide.dark{color:var(--paper);background:var(--ink)}
+
+  /* 默认页：遮罩较厚，保证文字可读 */
+  .slide::before{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none;transition:background .7s ease}
+  .slide.light::before{background:rgba(var(--paper-rgb),.78);backdrop-filter:blur(3px)}
+  .slide.dark::before{background:rgba(var(--ink-rgb),.78);backdrop-filter:blur(3px)}
+  /* Hero 页：遮罩大幅降低，让 WebGL 背景明显透出 */
+  .slide.hero.light::before{background:rgba(var(--paper-rgb),.16);backdrop-filter:none}
+  .slide.hero.dark::before{background:rgba(var(--ink-rgb),.12);backdrop-filter:none}
+  /* Hero 页顶底微弱渐隐，保证 chrome/foot 区域可读 */
+  .slide.hero::after{content:"";position:absolute;inset:0;z-index:-1;pointer-events:none}
+  .slide.hero.light::after{background:linear-gradient(180deg,rgba(var(--paper-rgb),.28) 0%,rgba(var(--paper-rgb),0) 14%,rgba(var(--paper-rgb),0) 86%,rgba(var(--paper-rgb),.28) 100%)}
+  .slide.hero.dark::after{background:linear-gradient(180deg,rgba(var(--ink-rgb),.32) 0%,rgba(var(--ink-rgb),0) 14%,rgba(var(--ink-rgb),0) 86%,rgba(var(--ink-rgb),.32) 100%)}
+
+  /* ============ Magazine chrome：顶部 meta + 底部 foot ============ */
+  .chrome{display:flex;justify-content:space-between;align-items:flex-start;font-family:var(--mono);font-size:12px;letter-spacing:.18em;text-transform:uppercase;opacity:.7}
+  .chrome .left,.chrome .right{display:flex;gap:2.4em;align-items:center}
+  .chrome .sep{width:40px;height:1px;background:currentColor;opacity:.4}
+  .foot{margin-top:auto;display:flex;justify-content:space-between;align-items:flex-end;font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;opacity:.55}
+  .foot .title{font-family:var(--serif-zh);font-weight:400;letter-spacing:.05em;text-transform:none;opacity:.75;font-size:13px}
+
+  .tag{display:inline-block;font-family:var(--mono);font-size:11px;letter-spacing:.24em;text-transform:uppercase;padding:6px 14px;border:1px solid currentColor;opacity:.85}
+  .rule{width:100%;height:1px;background:currentColor;opacity:.25;margin:3vh 0}
+  .rule.v{width:1px;height:100%;margin:0}
+
+  /* ============ 字体规则 ============
+     · 衬线（Noto Serif SC / Playfair）：大标题、重点金句、数字
+     · 非衬线（Noto Sans SC）：正文描述、body、补充说明
+     · 等宽（IBM Plex Mono）：kicker、meta 小标签、foot 右侧
+  */
+  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.3em;text-transform:uppercase;opacity:.6;margin-bottom:2.6vh}
+  .display{font-family:var(--serif-en);font-weight:700;font-size:11vw;line-height:.92;letter-spacing:-.025em}
+  .display-zh{font-family:var(--serif-zh);font-weight:700;font-size:7.8vw;line-height:1.04;letter-spacing:-.005em}
+  .h1-zh{font-family:var(--serif-zh);font-weight:700;font-size:4.6vw;line-height:1.12;letter-spacing:-.005em}
+  .h2-zh{font-family:var(--serif-zh);font-weight:600;font-size:3.2vw;line-height:1.2;letter-spacing:0}
+  .h3-zh{font-family:var(--serif-zh);font-weight:500;font-size:1.9vw;line-height:1.35}
+  .body-zh{font-family:var(--sans-zh);font-weight:400;font-size:max(15px,1.22vw);line-height:1.75;opacity:.82;letter-spacing:.01em}
+  .body-serif{font-family:var(--serif-zh);font-weight:400;font-size:max(15px,1.3vw);line-height:1.65;opacity:.88}
+  .lead{font-family:var(--serif-zh);font-weight:400;font-size:1.9vw;line-height:1.4;opacity:.85}
+  .meta{font-family:var(--mono);font-size:max(11px,.88vw);letter-spacing:.16em;text-transform:uppercase;opacity:.6}
+  .big-num{font-family:var(--serif-en);font-weight:800;font-size:10vw;line-height:.85;letter-spacing:-.03em;font-feature-settings:"tnum"}
+  .mid-num{font-family:var(--serif-en);font-weight:700;font-size:5.5vw;line-height:.88;letter-spacing:-.02em;font-feature-settings:"tnum"}
+  .ghost{font-family:var(--serif-en);font-weight:900;font-size:34vw;line-height:.8;opacity:.06;letter-spacing:-.04em;position:absolute;font-feature-settings:"tnum"}
+  em{font-style:italic;font-family:var(--serif-en)}
+  .en{font-family:var(--serif-en);font-style:italic;font-weight:500}
+
+  /* ============ 布局工具 ============ */
+  .col{display:flex;flex-direction:column;gap:2.4vh}
+  .row{display:flex;align-items:center;gap:3vw}
+  .grid-6{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:4vw 6vw;flex:1;align-content:center;padding:2vh 0}
+  .grid-9{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:3vh 4vw;flex:1;align-content:center}
+  .grid-4{display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:repeat(2,1fr);gap:4vh 6vw;flex:1;align-content:center}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:4vw;flex:1;align-content:center}
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:4vw;flex:1;align-items:center}
+  .split-55{display:grid;grid-template-columns:55fr 45fr;gap:5vw;flex:1;align-items:stretch}
+  .fill{flex:1}
+  .center{align-items:center;justify-content:center;text-align:center}
+  .bottom-left{position:absolute;left:6vw;bottom:9vh;max-width:50vw}
+  .bottom-right{position:absolute;right:6vw;bottom:9vh;max-width:50vw;text-align:right}
+  .top-right{position:absolute;right:6vw;top:6vh;text-align:right}
+
+  /* ============ Stat（数字矩阵） ============ */
+  .stat{display:flex;flex-direction:column;gap:1vh;align-items:flex-start}
+  .stat .n{font-family:var(--serif-en);font-weight:800;font-size:8vw;line-height:.88;letter-spacing:-.03em;font-feature-settings:"tnum"}
+  .stat .l{font-family:var(--sans-zh);font-size:max(13px,1.05vw);opacity:.7;margin-top:1vh;font-weight:400;line-height:1.5}
+  .stat .m{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.5;margin-bottom:.2vh}
+
+  /* ============ Callout（引用框） ============ */
+  .callout{padding:3vh 2.4vw;border-left:3px solid currentColor;position:relative;font-family:var(--serif-zh);font-size:max(15px,1.2vw);line-height:1.55;opacity:.92}
+  .slide.light .callout{background:rgba(var(--ink-rgb),.05)}
+  .slide.dark .callout{background:rgba(var(--paper-rgb),.06)}
+  .callout .cite{display:block;margin-top:1.6vh;font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.6}
+  .callout .q-big{font-family:var(--serif-zh);font-weight:600;font-size:max(17px,1.6vw);line-height:1.42}
+
+  /* ============ Platform（平台卡） ============ */
+  .plat{display:flex;flex-direction:column;justify-content:flex-end;padding:2vh 0;border-top:1px solid currentColor;border-color:rgba(127,127,127,.35)}
+  .plat .name{font-family:var(--serif-zh);font-weight:700;font-size:1.8vw;margin-bottom:.6vh}
+  .plat .nb{font-family:var(--serif-en);font-weight:700;font-size:3.2vw;letter-spacing:-.02em;line-height:1;font-feature-settings:"tnum"}
+  .plat .sub{font-family:var(--mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;opacity:.55;margin-top:.6vh}
+  .plat .fill{font-family:var(--sans-zh);font-weight:300;font-size:2.4vw;opacity:.28;letter-spacing:-.01em;line-height:1}
+
+  /* ============ Rowline（表格行） ============ */
+  .rowline{display:grid;grid-template-columns:1fr 2fr 1fr;gap:2vw;padding:2.2vh 0;border-top:1px solid currentColor;align-items:center;border-color:rgba(127,127,127,.25)}
+  .rowline:last-child{border-bottom:1px solid currentColor;border-color:rgba(127,127,127,.25)}
+  .rowline .k{font-family:var(--serif-zh);font-weight:700;font-size:1.7vw}
+  .rowline .v{font-family:var(--sans-zh);font-weight:400;font-size:max(14px,1.2vw);opacity:.85;line-height:1.55}
+  .rowline .m{font-family:var(--mono);font-size:11px;letter-spacing:.2em;text-transform:uppercase;opacity:.6;justify-self:end}
+
+  /* ============ Pillar（支柱卡片） ============ */
+  .pillar{display:flex;flex-direction:column;gap:1.8vh}
+  .pillar .ic{font-family:var(--serif-en);font-style:italic;font-size:2.6vw;opacity:.45;font-weight:400}
+  .pillar .ic svg{width:2.8vw;height:2.8vw;stroke-width:1.2;opacity:.7}
+  .pillar .t{font-family:var(--serif-zh);font-weight:700;font-size:2.4vw;line-height:1.1}
+  .pillar .d{font-family:var(--sans-zh);font-weight:400;font-size:max(14px,1.1vw);opacity:.76;line-height:1.6}
+
+  /* ============ Signature / Highlight ============ */
+  .sign{font-family:var(--serif-en);font-style:italic;font-weight:500;font-size:2vw;opacity:.7}
+  .hi{position:relative;display:inline}
+  .slide.dark .hi::after{content:"";position:absolute;left:-.1em;right:-.1em;bottom:-.05em;height:.28em;background:rgba(var(--paper-rgb),.15);z-index:-1}
+  .slide.light .hi::after{content:"";position:absolute;left:-.1em;right:-.1em;bottom:-.05em;height:.28em;background:rgba(var(--ink-rgb),.08);z-index:-1}
+
+  /* ============ Icons（Lucide via CDN） ============ */
+  .ico{width:1em;height:1em;display:inline-block;vertical-align:-.12em;stroke:currentColor;fill:none;stroke-width:1.4;stroke-linecap:round;stroke-linejoin:round;flex-shrink:0}
+  .ico-lg,.ico-md,.ico-sm{fill:none;stroke:currentColor;stroke-linecap:round;stroke-linejoin:round}
+  .ico-lg{width:2.6vw;height:2.6vw;stroke-width:1.2;display:inline-block}
+  .ico-md{width:1.8vw;height:1.8vw;stroke-width:1.3;display:inline-block;vertical-align:-.4em}
+  .ico-sm{width:1.1vw;height:1.1vw;stroke-width:1.4;display:inline-block;vertical-align:-.15em;opacity:.7}
+
+  /* ============ 图片占位（虚线框，提示设计师位置） ============ */
+  .img-slot{border:1.5px dashed rgba(127,127,127,.4);display:flex;align-items:center;justify-content:center;flex-direction:column;gap:1vh;padding:2vh 2vw;font-family:var(--mono);font-size:10px;letter-spacing:.28em;text-transform:uppercase;opacity:.55;position:relative;aspect-ratio:16/9;width:100%;max-height:56vh;margin-inline:auto;box-sizing:border-box}
+  .img-slot::before{content:"";position:absolute;inset:8px;border:1px solid currentColor;opacity:.2}
+  .img-slot .plus{font-size:2vw;font-weight:300;opacity:.5;letter-spacing:0}
+  .img-slot .label{position:relative;z-index:2;text-align:center}
+  .img-slot.r-4x3{aspect-ratio:4/3}
+  .img-slot.r-3x2{aspect-ratio:3/2}
+  .img-slot.r-1x1{aspect-ratio:1/1}
+
+  /* ============ 图片实填框（关键：固定高度 + 只裁底部） ============
+     重要约束：高度用内联 height:Nvh 精确控制，不要用 aspect-ratio（会撑破布局）
+     object-position:top center 保证严禁裁剪顶部和左右，只裁剪底部
+  */
+  .frame-img{overflow:hidden;position:relative;background:rgba(0,0,0,.04);box-sizing:border-box;width:100%;border-radius:4px}
+  .slide.dark .frame-img{background:rgba(255,255,255,.04);border-color:rgba(255,255,255,.12)}
+  .frame-img > img{width:100%;height:100%;object-fit:cover;object-position:top center;display:block}
+  .frame-img.fit-contain > img{object-fit:contain;object-position:center center}
+  .frame-img.r-16x9{aspect-ratio:16/9;max-height:64vh}
+  .frame-img.r-16x10{aspect-ratio:16/10;max-height:56vh}
+  .frame-img.r-4x3{aspect-ratio:4/3;max-height:56vh}
+  .frame-img.r-3x2{aspect-ratio:3/2;max-height:46vh}
+  .frame-img.r-3x4{aspect-ratio:3/4;max-height:60vh}
+  .frame-img.r-1x1{aspect-ratio:1/1;max-height:50vh}
+  .frame-img.h-16{height:16vh}
+  .frame-img.h-18{height:18vh}
+  .frame-img.h-22{height:22vh}
+  .frame-img.h-26{height:26vh}
+  .frame-img.h-28{height:28vh}
+  .frame-cap{display:flex;justify-content:space-between;align-items:baseline;gap:1vw;margin-top:.8vh;font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.72}
+  .frame-cap .pf{font-family:var(--serif-zh);font-weight:600;font-size:max(13px,1vw);letter-spacing:.04em;text-transform:none;opacity:.94}
+  .frame-cap .nb{font-family:var(--serif-en);font-style:italic;font-size:max(15px,1.2vw);letter-spacing:.02em;text-transform:none;opacity:.88}
+  .frame-cap .idx{font-family:var(--mono);opacity:.5}
+  figure.tile{display:flex;flex-direction:column;margin:0;min-width:0}
+  figure.tile > .frame-img{flex:0 0 auto}
+
+  /* ============ 导航 ============ */
+  #nav{position:fixed;left:50%;bottom:2.6vh;transform:translateX(-50%);z-index:30;display:flex;gap:10px;padding:8px 14px;border-radius:999px;background:rgba(0,0,0,.18);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px)}
+  #nav .dot{width:8px;height:8px;border-radius:50%;background:rgba(255,255,255,.3);cursor:pointer;transition:all .3s ease;border:0;padding:0}
+  #nav .dot:hover{background:rgba(255,255,255,.5);transform:scale(1.15)}
+  #nav .dot.active{background:rgba(255,255,255,.95);width:22px;border-radius:999px}
+  body.light-bg #nav{background:rgba(255,255,255,.25)}
+  body.light-bg #nav .dot{background:rgba(var(--ink-rgb),.25)}
+  body.light-bg #nav .dot.active{background:rgba(var(--ink-rgb),.9)}
+  #hint{position:fixed;bottom:3vh;right:3vw;z-index:30;font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;opacity:.4;mix-blend-mode:difference;color:#aaa}
+  body.low-power #hint{opacity:.72;color:var(--paper);mix-blend-mode:normal}
+  body.light-bg.low-power #hint{color:var(--ink)}
+
+  /* ============================================================
+     ============ LAYOUTS API · 面向 agent 的类（v2）============
+     所有 layouts.md 中的骨架都基于下面这套命名。
+     如果你在 layouts.md 里看到某个类，它必须在下面有定义。
+     ============================================================ */
+
+  /* ---------- .frame：每页主内容容器 ---------- */
+  .frame{flex:1;display:flex;flex-direction:column;min-height:0;overflow:hidden}
+  /* 当 .frame 同时加了 grid 类时，grid 的 display:grid 覆盖 flex */
+  .frame.grid-2-7-5,
+  .frame.grid-2-6-6,
+  .frame.grid-2-8-4,
+  .frame.grid-3-3,
+  .frame.grid-6{display:grid}
+
+  /* ---------- 标题层级（API 名称，衬线为主） ---------- */
+  .h-hero{
+    font-family:var(--serif-zh);
+    font-weight:900;
+    font-size:10vw;
+    line-height:.96;
+    letter-spacing:-.02em;
+  }
+  .h-xl{
+    font-family:var(--serif-zh);
+    font-weight:700;
+    font-size:6.2vw;
+    line-height:1.08;
+    letter-spacing:-.01em;
+  }
+  .h-sub{
+    font-family:var(--serif-zh);
+    font-weight:500;
+    font-size:3.1vw;
+    line-height:1.25;
+    letter-spacing:0;
+    opacity:.7;
+  }
+  .h-md{
+    font-family:var(--serif-zh);
+    font-weight:600;
+    font-size:2.3vw;
+    line-height:1.3;
+  }
+  /* 英文标题专用（Playfair 衬线） */
+  .h-hero-en,.h-xl-en{font-family:var(--serif-en);letter-spacing:-.025em}
+
+  /* ---------- lead 引语 ---------- */
+  .lead{
+    font-family:var(--serif-zh);
+    font-weight:400;
+    font-size:1.75vw;
+    line-height:1.5;
+    opacity:.86;
+  }
+
+  /* ---------- meta-row 底部元数据 ---------- */
+  .meta-row{
+    display:flex;
+    gap:1.2em;
+    align-items:baseline;
+    flex-wrap:wrap;
+    font-family:var(--mono);
+    font-size:max(12px,.92vw);
+    letter-spacing:.16em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+
+  /* ---------- stat-card（数据大字报用） ---------- */
+  .stat-card{
+    display:flex;
+    flex-direction:column;
+    gap:.8vh;
+    align-items:flex-start;
+    padding-top:1.6vh;
+    border-top:1px solid currentColor;
+    border-color:rgba(127,127,127,.3);
+  }
+  .stat-card .stat-label{
+    font-family:var(--mono);
+    font-size:max(10px,.78vw);
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    opacity:.55;
+  }
+  .stat-card .stat-nb{
+    font-family:var(--serif-en);
+    font-weight:800;
+    font-size:5.8vw;
+    line-height:.9;
+    letter-spacing:-.03em;
+    font-feature-settings:"tnum";
+    margin-top:.4vh;
+  }
+  .stat-card .stat-nb .stat-unit{
+    font-family:var(--serif-zh);
+    font-weight:500;
+    font-size:.38em;
+    letter-spacing:0;
+    opacity:.72;
+    margin-left:.14em;
+  }
+  .stat-card .stat-note{
+    font-family:var(--sans-zh);
+    font-weight:400;
+    font-size:max(13px,1.05vw);
+    line-height:1.5;
+    opacity:.72;
+    margin-top:.6vh;
+  }
+  /* 当 stat-card 用于 grid-4（2x2），数字适度放大；若页面有标题+引文在上方，可内联 style 覆盖为更小值 */
+  .grid-4 .stat-card .stat-nb{font-size:5vw}
+  /* 当只有 3 个，字也可以稍大 */
+  .grid-3 .stat-card .stat-nb{font-size:6.8vw}
+
+  /* ---------- pipeline（流水线） ---------- */
+  .pipeline-section{
+    margin-top:4.4vh;
+    padding-top:2.8vh;
+    border-top:1px dashed rgba(127,127,127,.32);
+  }
+  .pipeline-section:first-of-type{
+    border-top:0;
+    padding-top:0;
+    margin-top:3vh;
+  }
+  .pipeline-label{
+    font-family:var(--mono);
+    font-size:max(11px,.85vw);
+    letter-spacing:.24em;
+    text-transform:uppercase;
+    opacity:.62;
+    margin-bottom:2.2vh;
+  }
+  .pipeline{
+    display:grid;
+    grid-template-columns:repeat(5,1fr);
+    gap:1.2vw;
+  }
+  .pipeline[data-cols="3"]{grid-template-columns:repeat(3,1fr)}
+  .pipeline[data-cols="4"]{grid-template-columns:repeat(4,1fr)}
+  .pipeline[data-cols="6"]{grid-template-columns:repeat(6,1fr)}
+  .step{
+    display:flex;
+    flex-direction:column;
+    gap:.8vh;
+    padding-top:1.4vh;
+    border-top:1px solid currentColor;
+    border-color:rgba(127,127,127,.35);
+  }
+  .step-nb{
+    font-family:var(--serif-en);
+    font-style:italic;
+    font-weight:500;
+    font-size:1.15vw;
+    opacity:.45;
+  }
+  .step-title{
+    font-family:var(--sans-zh);
+    font-weight:700;
+    font-size:1.55vw;
+    letter-spacing:.01em;
+    line-height:1.2;
+  }
+  .step-desc{
+    font-family:var(--sans-zh);
+    font-weight:400;
+    font-size:max(12px,.95vw);
+    line-height:1.45;
+    opacity:.72;
+  }
+
+  /* ---------- 网格（layouts.md 所用） ---------- */
+  /* 这些类独立挂到任何容器上都能生效，不依赖 .frame 复合选择器 */
+  .grid-2-7-5{display:grid;grid-template-columns:7fr 5fr;gap:3vw 4vh;align-items:start}
+  .grid-2-6-6{display:grid;grid-template-columns:1fr 1fr;gap:3vw 4vh;align-items:start}
+  .grid-2-8-4{display:grid;grid-template-columns:8fr 4fr;gap:3vw 4vh;align-items:start}
+  .grid-3-3{
+    display:grid;
+    grid-template-columns:repeat(3,1fr);
+    grid-auto-rows:minmax(0,1fr);
+    gap:2.4vh 2vw;
+  }
+  /* grid-6 已在旧样式里定义为 3x2，这里仅补 align */
+
+  /* ---------- 图片 frame-img（layouts.md 主命名） ---------- */
+  /* 在旧样式里已定义，这里补 img-cap 命名别名与增强 */
+  figure.frame-img{margin:0;display:flex;flex-direction:column;min-width:0}
+  .img-cap{
+    display:block;
+    margin-top:.8vh;
+    font-family:var(--mono);
+    font-size:max(10px,.8vw);
+    letter-spacing:.22em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+  /* callout src 命名别名 */
+  .callout-src{
+    display:block;
+    margin-top:1.6vh;
+    font-family:var(--mono);
+    font-size:11px;
+    letter-spacing:.2em;
+    text-transform:uppercase;
+    opacity:.6;
+  }
+
+  /* ---------- chrome & foot 补位（layouts.md 简单写法） ---------- */
+  .chrome{font-family:var(--mono);font-size:max(11px,.78vw);letter-spacing:.2em;text-transform:uppercase;opacity:.62}
+  .foot{font-family:var(--mono);font-size:max(11px,.78vw);letter-spacing:.18em;text-transform:uppercase;opacity:.5}
+
+  /* ============ 动效系统(Motion One 驱动) ============
+     所有 [data-anim] 元素默认隐藏,进入页面时由 JS 逐个揭示。
+     - cascade(默认):按 DOM 顺序 stagger 120ms 淡入 + y:16→0
+     - hero(hero 页自动):慢一点的 stagger 180ms
+     - quote(含 [data-anim="line"]):逐行 600ms 淡入
+     - directional(含 [data-anim="left|right"]):左→分隔线→右
+     - pipeline(data-animate="pipeline"):Space/→ 手动推进
+     Motion One 没加载成功时(CDN 断 + 本地丢),所有 [data-anim] 会兜底显示。
+  */
+
+    /* ---------- 视觉密度扩展：dense list / mini card / kv / tl / vote / scale7 ---------- */
+    .dlist{display:flex;flex-direction:column;flex:1;justify-content:center;gap:0}
+    .dlist .di{display:grid;grid-template-columns:3.2em 1fr;gap:1.4vw;align-items:baseline;padding:1.7vh 0;border-top:1px solid rgba(127,127,127,.28);font-family:var(--sans-zh)}
+    .dlist .di:last-child{border-bottom:1px solid rgba(127,127,127,.28)}
+    .dlist .dn{font-family:var(--serif-en);font-style:italic;font-weight:700;font-size:1.18vw;opacity:.45;letter-spacing:-.02em;min-width:2.6em}
+    .dlist .dt{font-size:max(15px,1.22vw);line-height:1.5;opacity:.88}
+    .dlist .dt b{font-weight:700;font-family:var(--serif-zh);color:inherit}
+    .slide.dark .dlist .dt{opacity:.9}
+    .dlist .dt em{font-family:var(--serif-en);font-style:italic;color:var(--accent);font-weight:600}
+
+    /* mini card —— 小型密集卡片 */
+    .mini{display:flex;flex-direction:column;gap:.7vh;padding:1.7vh 1.2vw;border:1px solid rgba(127,127,127,.32);position:relative}
+    .slide.light .mini{background:rgba(var(--ink-rgb),.025)}
+    .slide.dark .mini{background:rgba(var(--paper-rgb),.04)}
+    .mini .mm{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.55}
+    .mini .mt{font-family:var(--serif-zh);font-weight:700;font-size:max(14px,1.3vw);line-height:1.2;letter-spacing:-.01em}
+    .mini .md{font-family:var(--sans-zh);font-size:max(12px,1.02vw);line-height:1.5;opacity:.72}
+    .mini .accent{position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--accent)}
+    .slide.dark .mini .accent{background:var(--cyan)}
+
+    /* kv —— 双列 key-value 网格 */
+    .kv{display:grid;grid-template-columns:repeat(2,1fr);gap:1.2vh 3.6vw;flex:1;align-content:center}
+    .kv .k{font-family:var(--serif-zh);font-weight:700;font-size:max(15px,1.3vw);line-height:1.25;letter-spacing:-.01em;display:flex;gap:.6em;align-items:baseline}
+    .kv .k .nb{font-family:var(--serif-en);font-style:italic;font-weight:800;font-size:1.5vw;opacity:.4;min-width:1.6em;letter-spacing:0}
+    .kv .v{font-family:var(--sans-zh);font-size:max(13px,1.08vw);line-height:1.55;opacity:.75;margin-top:.6vh}
+
+    /* timeline —— 横向时间线（7 节点） */
+    .tl{position:relative;display:grid;grid-template-columns:repeat(7,1fr);gap:0;align-items:start;padding:2.4vh 0 1vh}
+    .tl::before{content:"";position:absolute;left:2em;right:2em;top:1.05em;height:1px;background:currentColor;opacity:.3}
+    .tl .tn{position:relative;padding-top:0;display:flex;flex-direction:column;gap:.6vh;align-items:center;text-align:center}
+    .tl .td{width:12px;height:12px;border-radius:50%;background:var(--paper);border:2px solid currentColor;margin-top:.4em;z-index:1;opacity:.95}
+    .tl .tn.bad .td{background:var(--accent);border-color:var(--accent)}
+    .tl .tt{font-family:var(--serif-en);font-style:italic;font-weight:600;font-size:max(12px,.95vw);opacity:.5}
+    .tl .tlb{font-family:var(--sans-zh);font-weight:600;font-size:max(11px,.9vw);line-height:1.3;opacity:.85;margin-top:.2vh;padding:0 .2em}
+
+    /* 投票 5 选 */
+    .vote{display:grid;grid-template-columns:repeat(5,1fr);gap:1.4vw;flex:1;align-content:center}
+    .vote .vb{position:relative;padding:1.6vh 1vw 1.6vh;border:1px solid rgba(127,127,127,.35);display:flex;flex-direction:column;justify-content:space-between;gap:1vh;min-height:18vh}
+    .slide.light .vote .vb{background:rgba(var(--ink-rgb),.025)}
+    .vote .vbn{font-family:var(--serif-en);font-style:italic;font-weight:800;font-size:4.4vw;line-height:.9;letter-spacing:-.04em;opacity:.18;position:absolute;right:.6vw;top:.4vh}
+    .vote .vbl{font-family:var(--serif-zh);font-weight:700;font-size:max(15px,1.4vw);line-height:1.25;letter-spacing:-.01em}
+    .vote .vbp{position:absolute;left:0;right:0;bottom:0;height:3px;background:currentColor;opacity:.18}
+
+    /* 7 级能力刻度 */
+    .scale7{display:flex;flex-direction:column;gap:1.2vh;flex:1;align-content:center;padding:1vh 0}
+    .scale7 .sl{display:grid;grid-template-columns:2.4em 1fr 4.4em;gap:1.6vw;align-items:center;padding:1.4vh 0;border-top:1px solid rgba(127,127,127,.28);position:relative}
+    .scale7 .sl:last-child{border-bottom:1px solid rgba(127,127,127,.28)}
+    .scale7 .sl .sn{font-family:var(--serif-en);font-style:italic;font-weight:800;font-size:1.5vw;opacity:.4}
+    .scale7 .sl .sb{font-family:var(--serif-zh);font-weight:600;font-size:max(14px,1.2vw);letter-spacing:-.01em}
+    .scale7 .sl .sg{height:6px;background:currentColor;opacity:.85;transform-origin:left center;border-radius:1px}
+    .scale7 .sl .sg.s1{width:14%}.scale7 .sl .sg.s2{width:28%}.scale7 .sl .sg.s3{width:42%}.scale7 .sl .sg.s4{width:56%}.scale7 .sl .sg.s5{width:70%}.scale7 .sl .sg.s6{width:86%}.scale7 .sl .sg.s7{width:100%;background:var(--accent)}
+
+    /* 文件名 6 行（最终版文件夹） */
+    .files6{display:flex;flex-direction:column;gap:.8vh;flex:1;align-content:center}
+    .files6 .fn{display:grid;grid-template-columns:1.4em 1fr;gap:1.2vw;align-items:center;padding:1.5vh 1.2vw;border:1px solid rgba(127,127,127,.3);font-family:var(--mono);font-size:max(13px,1.1vw);letter-spacing:.04em}
+    .files6 .fn .fi{font-family:var(--serif-en);font-style:italic;opacity:.45}
+    .files6 .fn.fake{opacity:.35;text-decoration:line-through}
+    .files6 .fn.hot{border-color:var(--accent);color:var(--accent)}
+    .files6 .fn.hot .fi{color:var(--accent);opacity:.9}
+
+    /* chapter band —— 章节小色条 */
+    .chband{display:inline-flex;align-items:baseline;gap:.9em;padding:.5vh 1.1vw;background:var(--ink);color:var(--paper);font-family:var(--mono);font-size:max(11px,.95vw);letter-spacing:.24em;text-transform:uppercase}
+    .slide.dark .chband{background:var(--paper);color:var(--ink)}
+
+    /* 7-候选 网格 */
+    .cand6{display:grid;grid-template-columns:repeat(3,1fr);gap:1.6vh 2vw;flex:1;align-content:center}
+    .cand6 .cd{display:flex;gap:1.2vw;padding:1.7vh 1.2vw;border:1px solid rgba(127,127,127,.3);align-items:flex-start}
+    .slide.light .cand6 .cd{background:rgba(var(--ink-rgb),.025)}
+    .cand6 .cd .cn{font-family:var(--serif-en);font-style:italic;font-weight:800;font-size:2vw;line-height:1;opacity:.35;min-width:1.2em}
+    .cand6 .cd .ct{font-family:var(--serif-zh);font-weight:600;font-size:max(14px,1.2vw);line-height:1.4}
+
+    /* 视频分镜 5 格表格 */
+    .storyboard{display:grid;grid-template-columns:1.4em repeat(5,1fr);gap:.8vh 1.4vw;align-items:center;flex:1;align-content:center}
+    .storyboard .sh{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.55;padding-bottom:.8vh;border-bottom:1px solid currentColor}
+    .storyboard .sn{font-family:var(--serif-en);font-style:italic;font-weight:700;font-size:1.05vw;opacity:.5;text-align:center}
+    .storyboard .sc{font-family:var(--sans-zh);font-size:max(12px,1.02vw);line-height:1.4;padding:1vh 0;border-bottom:1px solid rgba(127,127,127,.22)}
+    .storyboard .sc.k{font-weight:600;opacity:.9}
+
+    /* 紧凑网格 6 队友 */
+    .squad6{display:grid;grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(2,1fr);gap:1.4vh 1.4vw;flex:1;align-content:center}
+    .squad6 .sq{display:flex;flex-direction:column;gap:.7vh;padding:1.7vh 1.2vw;border:1px solid rgba(127,127,127,.3);position:relative}
+    .slide.light .squad6 .sq{background:rgba(var(--ink-rgb),.025)}
+    .squad6 .sq .si{width:1.8vw;height:1.8vw;stroke:currentColor;stroke-width:1.4;fill:none}
+    .squad6 .sq .sn{font-family:var(--serif-zh);font-weight:700;font-size:max(14px,1.25vw);line-height:1.25}
+    .squad6 .sq .sd{font-family:var(--sans-zh);font-size:max(11px,.95vw);line-height:1.5;opacity:.72}
+    .squad6 .sq .accent{position:absolute;left:0;top:0;bottom:0;width:3px;background:var(--cyan)}
+    .squad6 .sq:nth-child(2) .accent{background:var(--violet)}
+    .squad6 .sq:nth-child(4) .accent{background:var(--accent)}
+
+    /* 三图横排（57 同场景三画风） */
+    .img3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2vw;flex:1;align-content:center}
+    .img3 figure{margin:0;display:flex;flex-direction:column;gap:.6vh;min-width:0}
+    .img3 figure img{width:100%;height:30vh;object-fit:cover;object-position:center 30%;border:1px solid rgba(127,127,127,.3)}
+    .img3 figcaption{font-family:var(--mono);font-size:10px;letter-spacing:.2em;text-transform:uppercase;opacity:.6;display:flex;justify-content:space-between}
+
+    /* action card（70 行动卡） */
+    .actioncard{display:flex;flex-direction:column;gap:1.2vh;padding:2.6vh 2.2vw;border:1px solid currentColor;position:relative;background:rgba(var(--ink-rgb),.03);max-width:60vw}
+    .slide.dark .actioncard{background:rgba(var(--paper-rgb),.05)}
+    .actioncard .al{font-family:var(--serif-zh);font-weight:600;font-size:max(15px,1.32vw);line-height:1.5;letter-spacing:-.005em;display:flex;gap:.8em}
+    .actioncard .al .lb{font-family:var(--mono);font-size:.78em;letter-spacing:.2em;text-transform:uppercase;opacity:.55;min-width:7.5em}
+    .actioncard .al .vl{font-family:var(--serif-zh);font-weight:500;font-size:1.05em;border-bottom:1px dashed currentColor;flex:1;opacity:.7}
+
+    /* 8 问清单（左右两列 4+4） */
+    .qgrid8{display:grid;grid-template-columns:repeat(2,1fr);gap:1vh 3vw;flex:1;align-content:center}
+    .qgrid8 .q8{display:grid;grid-template-columns:2em 1fr;gap:1vw;align-items:baseline;padding:1.5vh 0;border-top:1px solid rgba(127,127,127,.28)}
+    .qgrid8 .q8:nth-last-child(-n+2){border-bottom:1px solid rgba(127,127,127,.28)}
+    .qgrid8 .q8 .q8n{font-family:var(--serif-en);font-style:italic;font-weight:800;font-size:1.15vw;opacity:.4}
+    .qgrid8 .q8 .q8t{font-family:var(--sans-zh);font-size:max(14px,1.18vw);line-height:1.45}
+
+    /* 紧凑 3 卡（AI 战队/类型/创作者/知识库 6 卡紧凑版） */
+    .trio{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4vh 1.4vw;flex:1;align-content:center}
+    .trio .tr{padding:1.7vh 1.2vw;border:1px solid rgba(127,127,127,.3);display:flex;flex-direction:column;gap:.7vh}
+    .slide.light .trio .tr{background:rgba(var(--ink-rgb),.025)}
+    .trio .tr .trn{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.55}
+    .trio .tr .trt{font-family:var(--serif-zh);font-weight:700;font-size:max(14px,1.25vw);line-height:1.25}
+    .trio .tr .trd{font-family:var(--sans-zh);font-size:max(12px,1vw);line-height:1.5;opacity:.72}
+
+    /* 问号 hero big text */
+    .qbig{font-family:var(--serif-zh);font-weight:700;font-size:7.4vw;line-height:1.06;letter-spacing:-.02em}
+    .qbig em{font-family:var(--serif-en);font-style:italic;color:var(--accent);font-weight:800}
+
+    /* ---------- 自适应密度：条目多时整页收紧，避免溢出被裁 ---------- */
+    .frame.tight{padding-top:3.2vh}
+    .frame.tight > .kicker{margin-bottom:1.5vh}
+    .frame.tight > h2{font-size:5.1vw}
+    .frame.tight > .lead{font-size:1.5vw;line-height:1.42;margin-top:1.1vh}
+    .frame.tight > .dlist{margin-top:2.2vh}
+    .frame.tight > .pipeline{margin-top:2.2vh}
+    .frame.tight > .scale7{margin-top:2.2vh}
+
+    .dlist.d6 .di{padding:1.1vh 0}
+    .dlist.d6 .dt{font-size:max(14px,1.12vw);line-height:1.45}
+    .dlist.d7 .di{padding:1.00vh 0}
+    .dlist.d8 .di{padding:.66vh 0}
+    .dlist.d7 .dt{font-size:max(14px,1.12vw);line-height:1.42}
+    .dlist.d8 .dt{font-size:max(13px,1.03vw);line-height:1.38}
+    .dlist.d7 .dn,.dlist.d8 .dn{font-size:1.05vw;min-width:2.4em}
+
+    .r5 .rowline,.r6 .rowline{padding:1.5vh 0}
+    .r5 .k,.r6 .k{font-size:max(14px,1.16vw)}
+    .r6 .rowline{padding:1.25vh 0}
+    /* 右列与左列同字号：模板 .m 是 11px mono 太小，覆盖为正文级 */
+    .rowline .m{font-family:var(--sans-zh);font-size:max(14px,1.2vw);line-height:1.55;opacity:.85;justify-self:end;letter-spacing:0;text-transform:none}
+
+    .pipeline.p7{gap:.9vw}
+    .pipeline.p7 .step{padding-top:1vh;gap:.5vh}
+    .pipeline.p7 .step-nb{font-size:1vw}
+    .pipeline.p7 .step-title{font-size:max(14px,1.22vw)}
+    .pipeline.p7 .step-desc{font-size:max(11px,.9vw);line-height:1.4}
+
+    .scale7.s7 .sl{padding:.98vh 0}
+    .scale7.s7 .sb{font-size:max(13px,1.1vw)}
+    .scale7.s7 .sn{font-size:1.3vw}
+
+    /* 分镜表 + 配图：两栏并排，避免竖排溢出 */
+    .sbwrap{display:grid;grid-template-columns:1.15fr 1fr;gap:2.6vw;align-items:start;flex:1;min-height:0;margin-top:2.6vh}
+    .sbwrap .storyboard{margin-top:0}
+    .sbwrap .frame-img{margin:0}
+
+    /* fitbox —— 内容包装层，供 autofit 整体等比缩放，杜绝裁切 */
+    .fitbox{display:flex;flex-direction:column;flex:1;min-height:0;transform-origin:top left}
+
+    /* 7 步流水线（模板只定义了 3/4/5/6 列） */
+    .pipeline[data-cols="7"]{grid-template-columns:repeat(7,1fr)}
+
+    /* flow —— 竖排流程行（6-8 步时比横排更能填满版面） */
+    .flow{display:flex;flex-direction:column;flex:1;justify-content:center;margin-top:2.2vh}
+    .flow .fw{display:grid;grid-template-columns:2.8em 6.6em 1fr;gap:1.4vw;align-items:baseline;padding:2.1vh 0;border-top:1px solid rgba(127,127,127,.28)}
+    .flow .fw:last-child{border-bottom:1px solid rgba(127,127,127,.28)}
+    .flow .fn{font-family:var(--serif-en);font-style:italic;font-weight:700;font-size:1.15vw;opacity:.45}
+    .flow .ft{font-family:var(--serif-zh);font-weight:700;font-size:max(15px,1.38vw);letter-spacing:-.01em;line-height:1.2}
+    .flow .fd{font-family:var(--sans-zh);font-size:max(13px,1.08vw);line-height:1.45;opacity:.78}
+
+    /* band3 —— 底部三栏信息带，用来填满竖版页的下半部空白 */
+    .band3{display:grid;grid-template-columns:repeat(3,1fr);gap:1.4vw;margin-top:auto;padding-top:2.2vh}
+    .band3 .bd{display:flex;flex-direction:column;gap:.5vh;padding:1.6vh 1.2vw;border-top:2px solid currentColor}
+    .band3 .bd .bl{font-family:var(--mono);font-size:10px;letter-spacing:.22em;text-transform:uppercase;opacity:.55}
+    .band3 .bd .bt{font-family:var(--serif-zh);font-weight:700;font-size:max(14px,1.22vw);line-height:1.25;letter-spacing:-.01em}
+    .band3 .bd .bdd{font-family:var(--sans-zh);font-size:max(12px,1vw);line-height:1.5;opacity:.72}
+    .band3 .bd.hot{border-top-color:var(--accent)}
+    .band3 .bd.hot .bt{color:var(--accent)}
+
+    /* ---- 图文两栏页防压字（全局兜底） ---- */
+    .frame > *{min-width:0}
+    /* 窄屏（<1000px）图文两栏一律降为 flex 单列：文字上、图片下。
+       grid 单列在固定高度容器下会被浏览器压缩行高，导致图片溢出盖住上方文字，
+       所以整列用 flex column（行高=内容高，不压缩），图片限高防止超高。 */
+    @media (max-width:1000px){
+      .cover-frame,.closing-frame,.grid-2-7-5,.grid-2-6-6,.grid-2-8-4,.sbwrap{
+        display:flex!important;flex-direction:column!important;
+        align-items:stretch!important;justify-content:flex-start!important;
+        gap:2.6vh!important;min-height:0!important;height:auto!important;flex:0 0 auto!important;
+      }
+      .cover-frame > div:first-child,.closing-frame > div:first-child,
+      .grid-2-7-5 > div:first-child,.grid-2-6-6 > div:first-child,.grid-2-8-4 > div:first-child,
+      .sbwrap > div:first-child{max-width:none!important;flex:0 0 auto!important;min-height:0!important}
+      .cover-frame .frame-img,.closing-frame .frame-img,
+      .grid-2-7-5 .frame-img,.grid-2-6-6 .frame-img,.grid-2-8-4 .frame-img,.sbwrap .frame-img{
+        max-height:30vh!important;flex:0 0 auto!important;width:100%!important;margin:0!important;
+      }
+    }
+    /* 超窄窗（≤860px）二次降级：图片更小，给文字让出空间，避免压到页脚 */
+    @media (max-width:860px){
+      .cover-frame .frame-img,.closing-frame .frame-img,
+      .grid-2-7-5 .frame-img,.grid-2-6-6 .frame-img,.grid-2-8-4 .frame-img,.sbwrap .frame-img{
+        max-height:20vh!important;
+      }
+      .cover-frame,.closing-frame,.grid-2-7-5,.grid-2-6-6,.grid-2-8-4,.sbwrap{gap:2vh!important}
+    }
+
+  [data-anim]{opacity:1}
+  body.motion-ready [data-anim]{opacity:0}
+  body.motion-ready [data-anim="left"]{transform:translateX(-24px)}
+  body.motion-ready [data-anim="right"]{transform:translateX(24px)}
+  body.motion-ready [data-anim="line"]{opacity:0;transform:translateY(10px)}
+  body.motion-ready [data-animate="pipeline"] [data-anim]{opacity:.15}
+  body.low-power #deck{transition:none!important}
+  body.low-power *,
+  body.low-power *::before,
+  body.low-power *::after{animation:none!important;transition:none!important}
+  body.low-power.motion-ready [data-anim],
+  body.low-power [data-anim]{opacity:1!important;transform:none!important}
+
+  /* ---------- 响应式降级 ---------- */
+  @media (max-width:900px){
+    .display{font-size:16vw}
+    .display-zh{font-size:12vw}
+    .h1-zh{font-size:7vw}
+    .h-hero{font-size:14vw}
+    .h-xl{font-size:9vw}
+    .pipeline{grid-template-columns:repeat(2,1fr)}
+    .grid-2-7-5,.grid-2-6-6,.grid-2-8-4{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<script>
+  (function(){
+    const KEY = 'guizang-ppt-low-power';
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const stored = localStorage.getItem(KEY);
+    window.__lowPowerMode = stored === '1' || (stored === null && reduced);
+    function updateHint(){
+      const hint = document.getElementById('hint');
+      if(hint) hint.textContent = `← → 翻页 · B ${window.__lowPowerMode ? '动态' : '静态'} · ESC 索引`;
+    }
+    window.__setLowPowerMode = function(on, opts={}){
+      window.__lowPowerMode = !!on;
+      document.body.classList.toggle('low-power', window.__lowPowerMode);
+      if(opts.persist !== false) localStorage.setItem(KEY, window.__lowPowerMode ? '1' : '0');
+      if(window.__lowPowerMode && document.getAnimations){
+        document.getAnimations().forEach(a=>a.cancel());
+      }
+      updateHint();
+      dispatchEvent(new CustomEvent('ppt-low-power-change', {detail:{on:window.__lowPowerMode}}));
+      if(window.__playSlide) window.__playSlide(window.__currentSlideIndex || 0);
+    };
+    document.body.classList.toggle('low-power', window.__lowPowerMode);
+    addEventListener('DOMContentLoaded', updateHint, {once:true});
+  })();
+</script>
+
+<canvas id="bg-dark" class="bg"></canvas>
+<canvas id="bg-light" class="bg"></canvas>
+<div id="hint">← → 翻页 · B 静态 · ESC 索引</div>
+
+<div id="deck">
+
+<!-- ============================================================
+     SLIDES 插入区 · 在此处填充所有 <section class="slide ..."> 页面
+     每页模板参考 references/page-patterns.md
+     页面组件参考 references/components.md
+     ============================================================ -->
+
+<section class="slide hero dark">
+  <div class="chrome">
+    <div>校园 AI 入门 · Vol.01 · 开场</div>
+    <div>01 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame cover-frame" style="display:grid; grid-template-columns:1.15fr 1fr; gap:4vw; align-content:center; min-height:80vh; align-items:center">
+      <div style="display:flex; flex-direction:column; gap:3.2vh; max-width:48vw; min-width:0">
+        <div class="kicker" data-anim>大学新生 AI 科普讲座</div>
+        <h1 class="h-hero" data-anim style="font-size:8.6vw; line-height:1.04">你 + AI =<br>未来</h1>
+        <h2 class="h-sub" data-anim>从一句想法，到一个可以发布的 AI 作品</h2>
+        <p class="lead" data-anim style="max-width:42vw">今天不背概念。我们现场看看，AI 究竟能不能干活——用 150 分钟，把你和一组 AI 队友一起，做出一个真正属于你的作品。</p>
+        <div class="meta-row" data-anim><span>周轶彬 主讲</span><span>·</span><span>2026 开学季</span></div>
+      </div>
+      <figure class="frame-img r-16x9" data-anim style="margin:0; min-width:0">
+        <img src="images/01-cover.jpg" alt="封面主视觉：未来校园 + AI 数字队友" style="object-position:center 40%">
+        <figcaption class="img-cap">Vol.01 · 你 + AI = 未来</figcaption>
+      </figure>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · Vol.01 · 想象测试</div>
+    <div>02 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" style="padding-top:5vh">
+      <div class="kicker" data-anim>互动 · AI 使用频率</div>
+      <h2 class="h-xl" data-anim>你上一次使用 AI，是什么时候？</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:60vw; opacity:.78">现场举手或扫码投票。投完追一句：你当时遇到了什么问题？</p>
+      <div class="vote" style="margin-top:3.4vh">
+        <div class="vb" data-anim><div class="vbn">01</div><div class="vbl">今天</div><div class="vbp"></div></div>
+        <div class="vb" data-anim><div class="vbn">02</div><div class="vbl">最近一周</div><div class="vbp"></div></div>
+        <div class="vb" data-anim><div class="vbn">03</div><div class="vbl">偶尔用过</div><div class="vbp"></div></div>
+        <div class="vb" data-anim><div class="vbn">04</div><div class="vbl">从来没</div><div class="vbp"></div></div>
+        <div class="vb" data-anim><div class="vbn">05</div><div class="vbl">用过，但不知道算不算 AI</div><div class="vbp"></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>校园 AI 入门 · Vol.01 · 想象测试</div>
+    <div>03 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame grid-2-7-5" style="padding-top:5vh">
+      <div style="display:flex; flex-direction:column; justify-content:space-between; gap:2.4vh; min-height:68vh">
+        <div>
+          <div class="kicker" data-anim>互动 · 你把 AI 用在哪</div>
+          <h2 class="h-xl" data-anim>搜索、总结、写作、翻译、做 PPT</h2>
+          <p class="lead" data-anim style="margin-top:2.4vh; max-width:38vw; opacity:.82">生成图片、编写代码、陪聊或提供建议……用过很多次 AI，<br>你留下过一个<b style="font-weight:700">完整作品</b>吗？</p>
+        </div>
+        <div class="callout" data-anim>
+          <b style="font-family:var(--serif-zh);font-weight:700;font-size:max(18px,1.6vw);line-height:1.45;display:block">用过 AI 和用 AI 完成过一个项目，<br>是两件事。</b>今天的重点不是收藏工具，而是体验一整条创作流程。
+          <div class="callout-src">— 现场观察</div>
+        </div>
+      </div>
+      <figure class="frame-img r-16x10" data-anim style="margin:0">
+        <img src="images/03-usage.jpg" alt="">
+        <figcaption class="img-cap">校园 AI 入门 · Vol.01 · 想象测试</figcaption>
+      </figure>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · Vol.01 · 能力刻度</div>
+    <div>04 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame tight" style="padding-top:5vh">
+      <div class="kicker" data-anim>互动 · AI 能力刻度</div>
+      <h2 class="h-xl" data-anim>你想象中的 AI，能做到哪一步？</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">请选择你认为 AI 目前能稳定达到的最高等级。投完先不公布答案，等下课前回到第 69 页再讨论。</p>
+      <div class="scale7 s7" style="margin-top:3.2vh">
+        <div class="sl" data-anim><div class="sn">L1</div><div class="sb">回答问题</div><div class="sg s1"></div></div>
+        <div class="sl" data-anim><div class="sn">L2</div><div class="sb">帮我写内容</div><div class="sg s2"></div></div>
+        <div class="sl" data-anim><div class="sn">L3</div><div class="sb">读取我的文件</div><div class="sg s3"></div></div>
+        <div class="sl" data-anim><div class="sn">L4</div><div class="sb">操作电脑</div><div class="sg s4"></div></div>
+        <div class="sl" data-anim><div class="sn">L5</div><div class="sb">创建网页</div><div class="sg s5"></div></div>
+        <div class="sl" data-anim><div class="sn">L6</div><div class="sb">拍一支短片</div><div class="sg s6"></div></div>
+        <div class="sl" data-anim><div class="sn">L7</div><div class="sb">独立完成整个项目</div><div class="sg s7"></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>校园 AI 入门 · Vol.01 · 想象测试</div>
+    <div>05 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" style="padding-top:5vh">
+      <div class="kicker" data-anim>互动 · 猜测 AI 参与比例</div>
+      <h2 class="h-xl" data-anim>下面哪些作品，可能由 AI 完成？</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">每一项猜一个 AI 参与比例：10% / 50% / 90%。<br>提示：参与比例不是评价作品质量的唯一标准。</p>
+      <div style="margin-top:3.4vh; display:grid; grid-template-columns:repeat(2,1fr); gap:1.4vh 2vw; flex:1; align-content:center">
+        <div class="mini" data-anim><div class="mm">WORKS · 01</div><div class="mt">校园活动海报</div><div class="md">一次活动、视觉统一、信息清晰，3 人 1 天可完成</div></div>
+        <div class="mini" data-anim><div class="mm">WORKS · 02</div><div class="mt">30 秒剧情短片</div><div class="md">故事+分镜+人物+剪辑+配乐，链条很长</div></div>
+        <div class="mini" data-anim><div class="mm">WORKS · 03</div><div class="mt">课程复习助手</div><div class="md">结合课件、笔记、错题，按你的问题检索</div></div>
+        <div class="mini" data-anim><div class="mm">WORKS · 04</div><div class="mt">可以运行的作品网页</div><div class="md">从需求到部署、可以上线被别人打开</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · Vol.01 · 真实门槛</div>
+    <div>06 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" style="padding-top:5vh">
+      <div class="kicker" data-anim>五问 · 决定 AI 能不能做好</div>
+      <h2 class="h-xl" data-anim style="max-width:80vw">四个都能做，但「能生成」≠「能做好」</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">AI 降低了制作门槛，但没有取消人的判断。下面这五件事，少一件，结果都可能是垃圾。</p>
+      <div class="dlist " style="margin-top:3.2vh">
+          <div class="di" data-anim><div class="dn">01</div><div class="dt"><b>任务有没有说清楚</b>——目标、对象、限制、交付物是否明确</div></div>
+          <div class="di" data-anim><div class="dn">02</div><div class="dt"><b>工具是否适合</b>——聊天 AI / 智能体 / 知识库 / 编程队友，谁干最合适</div></div>
+          <div class="di" data-anim><div class="dn">03</div><div class="dt"><b>资料是否可靠</b>——是真实文件，还是 AI 自己编的</div></div>
+          <div class="di" data-anim><div class="dn">04</div><div class="dt"><b>有没有检查结果</b>——人是否真的读一遍、对一遍、跑一遍</div></div>
+          <div class="di" data-anim><div class="dn">05</div><div class="dt"><b>是否经过多轮修改</b>——第一版通常是 60 分，不是 90 分</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide hero dark">
+  <div class="chrome">
+    <div>校园 AI 入门 · Vol.01 · 真实任务</div>
+    <div>07 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" style="display:grid; gap:6vh; align-content:center; min-height:80vh">
+      <div class="kicker" data-anim>今天，我们接到一个真实任务</div>
+      <h1 class="qbig" style="font-size:7.4vw">
+        <span data-anim style="display:block">7 天后</span>
+        <span data-anim style="display:block">「未来校园创意展」</span>
+      </h1>
+      <p class="lead" data-anim style="max-width:55vw; opacity:.78">学校要求每个 3 人小组交出一件完整作品。</p>
+      <p class="lead" data-anim style="margin-top:4vh; max-width:50vw"><em style="font-family:var(--serif-en);font-style:italic;color:var(--accent);font-weight:700">3 人小组 · 非设计专业 · 7 天 · 预算有限</em></p>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · Vol.01 · AI 战队</div>
+    <div>08 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" style="padding-top:5vh">
+      <div class="kicker" data-anim>要完成任务，我们需要一支 AI 战队</div>
+      <h2 class="h-xl" data-anim>6 位 AI 队友 · 6 种岗位</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">不是把同一件事做六遍，而是六种能力互补。<br>下面这张表，就是接下来 70 页会用到的全部工具人。</p>
+      <div class="squad6" style="margin-top:3.2vh">
+        <div class="sq" data-anim><span class="accent"></span><i data-lucide="ai-assistant" class="si"></i><div class="sn">AI 助手</div><div class="sd">分析问题、整理信息、生成初稿、模拟练习</div></div>
+        <div class="sq" data-anim><span class="accent"></span><i data-lucide="agent" class="si"></i><div class="sn">AI 智能体</div><div class="sd">读取资料、操作工具、连续完成任务</div></div>
+        <div class="sq" data-anim><span class="accent"></span><i data-lucide="kb" class="si"></i><div class="sn">AI 知识库</div><div class="sd">管理项目资料、按你的资料回答问题</div></div>
+        <div class="sq" data-anim><span class="accent"></span><i data-lucide="code" class="si"></i><div class="sn">编程队友</div><div class="sd">创建网页、修改代码、运行测试</div></div>
+        <div class="sq" data-anim><span class="accent"></span><i data-lucide="aigc" class="si"></i><div class="sn">AIGC 创作者</div><div class="sd">生图、生视频、写故事与分镜</div></div>
+        <div class="sq" data-anim><span class="accent"></span><i data-lucide="pm" class="si"></i><div class="sn">项目管理员</div><div class="sd">保存版本、记录过程、发布作品</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第一关 · AI 能帮大学生做什么</div>
+    <div>09 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame tight" style="padding-top:5vh">
+      <div class="kicker" data-anim>互动 · 新生第一周</div>
+      <h2 class="h-xl" data-anim style="max-width:80vw">新生第一周，就有一堆事情等着你</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">你不必全部解决，但请选出<b>当前最让你头疼的一项</b>。这一项就是接下来我们要用 AI 帮你缓解的起点。</p>
+      <div class="dlist d7" style="margin-top:3.2vh">
+          <div class="di" data-anim><div class="dn">01</div><div class="dt"><b>课程表和教室</b>记不清，每天都在问同学</div></div>
+          <div class="di" data-anim><div class="dn">02</div><div class="dt"><b>活动通知</b>混在群聊里，关键时间总是错过</div></div>
+          <div class="di" data-anim><div class="dn">03</div><div class="dt"><b>小组作业</b>不知道如何分工，三个人交一份东西</div></div>
+          <div class="di" data-anim><div class="dn">04</div><div class="dt"><b>第一次做课堂展示</b>，要在一群人面前讲 5 分钟</div></div>
+          <div class="di" data-anim><div class="dn">05</div><div class="dt"><b>专业论文</b>看不懂，术语和公式像天书</div></div>
+          <div class="di" data-anim><div class="dn">06</div><div class="dt"><b>想参加比赛</b>但没有方向，不知道从哪里起步</div></div>
+          <div class="di" data-anim><div class="dn">07</div><div class="dt"><b>学习、社团和生活</b>时间冲突，每天都感觉不够用</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第一关 · 信息整理</div>
+    <div>10 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame grid-2-7-5" style="padding-top:5vh">
+      <div style="display:flex; flex-direction:column; justify-content:space-between; gap:2.4vh; min-height:68vh">
+        <div>
+          <div class="kicker" data-anim>案例 · 通知 → 行动清单</div>
+          <h2 class="h-xl" data-anim>把 3000 字活动通知变成 5 行行动</h2>
+          <p class="lead" data-anim style="margin-top:2.4vh; max-width:38vw; opacity:.82">AI 把复杂信息转化为下一步行动，而不是给你一份摘要。</p>
+        </div>
+        <div class="callout" data-anim>
+          <b style="font-family:var(--serif-zh);font-weight:700;font-size:max(17px,1.5vw);line-height:1.45;display:block">不是「把通知变短」，<br>而是「从通知里抽出你今天要做的事」。</b>
+          <div class="callout-src">— 现场观察</div>
+        </div>
+      </div>
+      <figure class="frame-img r-16x10" data-anim style="margin:0">
+        <img src="images/10-notice.jpg" alt="">
+        <figcaption class="img-cap">校园 AI 入门 · 第一关 · 信息整理</figcaption>
+      </figure>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第一关 · 信息整理</div>
+    <div>11 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" style="padding-top:5vh">
+      <div class="kicker" data-anim>设问 · 弄错会怎样</div>
+      <h2 class="h-xl" data-anim style="max-width:80vw">AI 整理信息，也可能把重点弄错</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">以下几种情况，全是过去一年里真实发生过的。</p>
+      <div class="dlist " style="margin-top:3.2vh">
+          <div class="di" data-anim><div class="dn">01</div><div class="dt">把<em>报名截止</em>当成<em>活动开始</em>时间，错过提交窗口</div></div>
+          <div class="di" data-anim><div class="dn">02</div><div class="dt">漏掉<em>附件要求</em>，审核被退回</div></div>
+          <div class="di" data-anim><div class="dn">03</div><div class="dt">忽略「<em>仅限前 30 名</em>」，排队到第 31 个才发现</div></div>
+          <div class="di" data-anim><div class="dn">04</div><div class="dt">没识别图片中的<em>二维码</em>信息，错过线下签到</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+  <section class="slide light" data-animate="cascade" style="padding:6vh 6vw 10vh">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第一关 · 课堂展示</div>
+    <div>12 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame">
+      <div class="kicker" data-anim>案例 · 明天要做 5 分钟展示</div>
+      <h2 class="h-xl" data-anim>AI 可以协助 · 但最后 5 分钟得你自己讲</h2>
+      <p class="lead" data-anim style="margin-top:1.4vh; max-width:64vw; opacity:.78">以下是 AI 可以在 10 分钟内完成的事。每一项都建议你自己再过一遍。</p>
+      <div class="pipeline " data-cols="6" style="margin-top:3.6vh">
+          <div class="step" data-anim="step"><div class="step-nb">01</div><div class="step-title">概括</div><div class="step-desc">用 100 字把文章核心说清楚</div></div>
+        <div class="step" data-anim="step"><div class="step-nb">02</div><div class="step-title">提炼</div><div class="step-desc">抽出 3 个关键观点，配上案例</div></div>
+        <div class="step" data-anim="step"><div class="step-nb">03</div><div class="step-title">设计</div><div class="step-desc">生成 5 页 PPT 的结构与大纲</div></div>
+        <div class="step" data-anim="step"><div class="step-nb">04</div><div class="step-title">预演</div><div class="step-desc">准备老师可能追问的 5 个问题</div></div>
+        <div class="step" data-anim="step"><div class="step-nb">05</div><div class="step-title">模拟</div><div class="step-desc">和 AI 做一次问答练习</div></div>
+        <div class="step" data-anim="step"><div class="step-nb">06</div><div class="step-title">计时</div><div class="step-desc">自己录音回放，控制 5 分钟节奏</div></div>
+      </div>
+        <div class="band3">
+            <div class="bd" data-anim><div class="bl">Time</div><div class="bt">10 分钟</div><div class="bdd">上面 6 件事，AI 基本都能在 10 分钟内给出第一版。</div></div>
+            <div class="bd hot" data-anim><div class="bl">Stage</div><div class="bt">最后 5 分钟</div><div class="bdd">站上讲台的那 5 分钟，只能是你自己讲。</div></div>
+            <div class="bd" data-anim><div class="bl">Advice</div><div class="bt">建议动作</div><div class="bdd">AI 给的东西先自己过一遍，改成你自己的话再讲。</div></div>
+        </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第一关 · 学习</div>
+    <div>13 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame grid-2-7-5" style="padding-top:5vh">
+      <div style="display:flex; flex-direction:column; justify-content:space-between; gap:2.4vh; min-height:68vh">
+        <div>
+          <div class="kicker" data-anim>方法 · 换一种解释</div>
+          <h2 class="h-xl" data-anim>论文看不懂，先换一种解释方式</h2>
+          <p class="lead" data-anim style="margin-top:2.4vh; max-width:38vw; opacity:.82">让 AI 用<b>三种方式</b>解释同一段论文，比读十遍更有效。</p>
+        </div>
+        <div class="callout" data-anim>
+          <b style="font-family:var(--serif-zh);font-weight:700;font-size:max(17px,1.5vw);line-height:1.45;display:block">AI 辅助理解，但不能替代阅读原文。<br>原文里的图表、注释、参考文献，<br>你得自己看过。</b>
+          <div class="callout-src">— 现场观察</div>
+        </div>
+      </div>
+      <figure class="frame-img r-16x10" data-anim style="margin:0">
+        <img src="images/13-paper.jpg" alt="">
+        <figcaption class="img-cap">校园 AI 入门 · 第一关 · 学习</figcaption>
+      </figure>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第一关 · 学习</div>
+    <div>14 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" style="padding-top:5vh">
+      <div class="kicker" data-anim>警告 · 看似合理，实际错误</div>
+      <h2 class="h-xl" data-anim style="max-width:80vw">它说得很专业，一定正确吗？</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">请让 AI 把以下 5 个问题答完，再翻到下一页对照结果。</p>
+      <div class="dlist " style="margin-top:3.2vh">
+          <div class="di" data-anim><div class="dn">01</div><div class="dt"><b>文献是否真实存在</b>——把题目丢到 Google Scholar 搜一下</div></div>
+          <div class="di" data-anim><div class="dn">02</div><div class="dt"><b>数据是否有明确来源</b>——统计年鉴、论文 DOI、政府公告</div></div>
+          <div class="di" data-anim><div class="dn">03</div><div class="dt"><b>人名、时间、地点</b>是否相互对应——错配是 AI 常见错</div></div>
+          <div class="di" data-anim><div class="dn">04</div><div class="dt"><b>相关性 ≠ 因果</b>——两件事一起出现不等于互相导致</div></div>
+          <div class="di" data-anim><div class="dn">05</div><div class="dt"><b>是否使用过度肯定语气</b>——「显然」「毫无疑问」要警惕</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第一关 · 学习</div>
+    <div>15 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" style="padding-top:5vh">
+      <div class="kicker" data-anim>方法 · 三个追问</div>
+      <h2 class="h-xl" data-anim>让 AI 答案更容易被核验</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">在 prompt 末尾加这三句，等于让 AI 自己先做一轮自检。</p>
+      <div class="trio" style="margin-top:3.2vh">
+        <div class="mini" data-anim><span class="accent"></span><div class="mm">PROMPT · 01</div><div class="mt">请提供原始来源</div><div class="md">这个结论来自哪里？给出可点击的链接或文献题录</div></div>
+        <div class="mini" data-anim><span class="accent"></span><div class="mm">PROMPT · 02</div><div class="mt">请区分三类信息</div><div class="md">已知事实 / 合理推测 / 不确定信息，分别用三段写</div></div>
+        <div class="mini" data-anim><span class="accent"></span><div class="mm">PROMPT · 03</div><div class="mt">请直接说「不确定」</div><div class="md">没有可靠依据时不要硬编，直接告诉我你不确定</div></div>
+      </div>
+          <div class="band3">
+              <div class="bd" data-anim><div class="bl">Why</div><div class="bt">为什么有效</div><div class="bdd">三句话把「核验」变成 AI 自己的一道工序。</div></div>
+              <div class="bd hot" data-anim><div class="bl">When</div><div class="bt">什么时候加</div><div class="bdd">涉及事实、数据、引文、时效性的任务，都建议加。</div></div>
+              <div class="bd" data-anim><div class="bl">Note</div><div class="bt">一个提醒</div><div class="bdd">它说「不确定」时，那恰恰是最有价值的回答。</div></div>
+          </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第一关 · 收束</div>
+    <div>16 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" data-animate="directional" style="padding-top:5vh">
+      <div class="kicker" data-anim>过渡 · 第一位队友</div>
+      <h2 class="h-xl" data-anim>AI 助手 · 它的擅长与局限</h2>
+      <div class="grid-2-6-6" style="margin-top:3.6vh; gap:3vw 4vh">
+        <div data-anim="left" style="padding:2.6vh 2vw; border-left:3px solid currentColor; opacity:.55">
+          <div class="kicker" style="opacity:.9; margin-bottom:1vh">擅长 · 适合做这些事</div>
+          <h3 class="h-md">能做的事</h3>
+          <ul style="margin-top:2vh; padding-left:1.2em; display:flex; flex-direction:column; gap:1.1vh; font-family:var(--sans-zh); font-size:max(14px,1.12vw); line-height:1.55">
+            <li>理解自然语言问题</li>
+            <li>整理资料、生成初稿</li>
+            <li>给创意、给方案选项</li>
+            <li>模拟面试 / 课堂问答</li>
+          </ul>
+        </div>
+        <div data-anim="right" style="padding:2.6vh 2vw; border-left:3px solid currentColor">
+          <div class="kicker" style="opacity:.9; margin-bottom:1vh">局限 · 这些事它做不了</div>
+          <h3 class="h-md">不能做的事</h3>
+          <ul style="margin-top:2vh; padding-left:1.2em; display:flex; flex-direction:column; gap:1.1vh; font-family:var(--sans-zh); font-size:max(14px,1.12vw); line-height:1.55">
+            <li>通常不会持续执行、不会主动推进</li>
+            <li>不了解你的真实背景和上下文</li>
+            <li>不会替你承担责任</li>
+            <li>不能联网或读你电脑上的最新文件</li>
+          </ul>
+        </div>
+      </div>
+          <div class="band3">
+              <div class="bd" data-anim><div class="bl">Rule</div><div class="bt">一条判断方法</div><div class="bdd">先问「这件事它能持续做下去吗」，再决定怎么用。</div></div>
+              <div class="bd hot" data-anim><div class="bl">Turn</div><div class="bt">过渡问题</div><div class="bdd">有没有一种 AI，不只给建议，还能直接完成任务？</div></div>
+              <div class="bd" data-anim><div class="bl">Next</div><div class="bt">下一关</div><div class="bdd">第二关：从聊天走向执行——让 AI 动手，不只是动嘴。</div></div>
+          </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide hero dark">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第二关 · 从聊天走向执行</div>
+    <div>17 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" style="display:grid; gap:6vh; align-content:center; min-height:80vh">
+      <div class="kicker" data-anim>失败现场</div>
+      <h1 class="qbig" style="font-size:7.4vw">
+        <span data-anim style="display:block">"帮我完成未来校园创意展作品。"</span>
+      </h1>
+      <p class="lead" data-anim style="max-width:55vw; opacity:.78">普通 AI 的回答：<br><em style="font-family:var(--serif-en);font-style:italic">确定主题 → 制定计划 → 选择工具 → 开始创作 → 检查作品</em></p>
+      <p class="lead" data-anim style="margin-top:4vh; max-width:50vw"><em style="font-family:var(--serif-en);font-style:italic;color:var(--accent);font-weight:700">道理都懂了，活到底谁来干？</em></p>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第二关 · 从聊天走向执行</div>
+    <div>18 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame tight" style="padding-top:4vh">
+      <div class="kicker" data-anim>期望 · 不只回答，还能继续行动</div>
+      <h2 class="h-xl" data-anim>我们希望 AI 沿着 7 步走完</h2>
+      <p class="lead" data-anim style="margin-top:1.3vh; max-width:70vw; opacity:.78">这 7 步不是列表，是一条连续的工作流——任何一步掉链子，后面都会出问题。</p>
+      <div class="flow">
+        <div class="fw" data-anim><div class="fn">01</div><div class="ft">阅读</div><div class="fd">读任务要求，读所有相关资料</div></div>
+        <div class="fw" data-anim><div class="fn">02</div><div class="ft">分析</div><div class="fd">拆解目标，识别约束</div></div>
+        <div class="fw" data-anim><div class="fn">03</div><div class="ft">规划</div><div class="fd">把任务切成可执行步骤</div></div>
+        <div class="fw" data-anim><div class="fn">04</div><div class="ft">选工具</div><div class="fd">为每步选最合适的工具</div></div>
+        <div class="fw" data-anim><div class="fn">05</div><div class="ft">执行</div><div class="fd">创建和修改文件，跑代码</div></div>
+        <div class="fw" data-anim><div class="fn">06</div><div class="ft">检查</div><div class="fd">验证结果是否符合预期</div></div>
+        <div class="fw" data-anim><div class="fn">07</div><div class="ft">迭代</div><div class="fd">根据反馈继续修改</div></div>
+      </div>
+          <div class="band3">
+              <div class="bd" data-anim><div class="bl">Chain</div><div class="bt">这是一条链，不是清单</div><div class="bdd">7 步连续推进，前一步的输出是后一步的输入。</div></div>
+              <div class="bd hot" data-anim><div class="bl">Risk</div><div class="bt">掉链子的地方</div><div class="bdd">任何一步没做好，后面每一步都会跟着出问题。</div></div>
+              <div class="bd" data-anim><div class="bl">Ask</div><div class="bt">接着要问的</div><div class="bdd">什么样的 AI，能自己走完这 7 步？——第二关要找的队友。</div></div>
+          </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide hero light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第二关 · AI 智能体</div>
+    <div>19 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" data-animate="quote" style="display:grid; gap:5vh; align-content:center; min-height:80vh; padding:2vh 0">
+      <div class="kicker" data-anim>关键词</div>
+      <blockquote style="font-family:var(--serif-zh); font-weight:700; font-size:5.4vw; line-height:1.18; letter-spacing:-.01em; max-width:78vw">
+        <span data-anim="line" style="display:block">「有目标 · 会规划 · 能用工具 · 会检查结果。」</span>
+      </blockquote>
+      <p class="lead" data-anim style="max-width:60vw; opacity:.7">能够围绕目标，<br>使用工具并连续完成任务的 AI 系统，<br>我们叫它 <em style="font-family:var(--serif-en);font-style:italic;color:var(--accent)">AI 智能体（Agent）</em>。</p>
+      <div class="meta-row" data-anim>
+        <span>不是新模型，是新的工作方式</span><span>·</span><span>你 + AI = 未来</span>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第二关 · 对照</div>
+    <div>20 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame tight" style="padding-top:5vh">
+      <div class="kicker" data-anim>对照 · 同样任务，交付物不同</div>
+      <h2 class="h-xl" data-anim>普通聊天 AI vs AI 智能体</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">左边是「告诉你怎么做」，右边是「直接做完」。两种都是 AI，差异在能不能用工具。</p>
+      <div class="r5" style="margin-top:3.4vh; display:flex; flex-direction:column; gap:0">
+        <div class="rowline" data-anim><div class="k">整理通知</div><div class="v">告诉你如何整理、给个模板</div><div class="m">读取文件并自动生成表格</div></div>
+        <div class="rowline" data-anim><div class="k">学习计划</div><div class="v">给一份通用计划建议</div><div class="m">读取课程表并生成日历事件</div></div>
+        <div class="rowline" data-anim><div class="k">制作网页</div><div class="v">生成代码建议片段</div><div class="m">创建项目并启动本地预览</div></div>
+        <div class="rowline" data-anim><div class="k">检查程序</div><div class="v">给排错思路</div><div class="m">运行测试、定位错误并改文件</div></div>
+        <div class="rowline" data-anim><div class="k">整理文件</div><div class="v">建议分类方式</div><div class="m">创建目录、批量重命名</div></div>
+      </div>
+          <div class="band3">
+              <div class="bd" data-anim><div class="bl">Core</div><div class="bt">分水岭在工具</div><div class="bdd">能不能读文件、跑代码、改文件，决定它是哪一类。</div></div>
+              <div class="bd hot" data-anim><div class="bl">Line</div><div class="bt">一句话区分</div><div class="bdd">一个告诉你怎么做，一个直接做完。</div></div>
+              <div class="bd" data-anim><div class="bl">Note</div><div class="bt">不是替代关系</div><div class="bdd">常见配合：先用聊天理清需求，再让智能体去执行。</div></div>
+          </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第二关 · 类比</div>
+    <div>21 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" style="padding-top:5vh">
+      <div class="kicker" data-anim>类比 · 五种器官</div>
+      <h2 class="h-xl" data-anim>智能体像一个会使用工具的队友</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">把 AI 智能体拆成五个器官，更容易理解它和你的协作方式。</p>
+      <div class="trio" style="margin-top:3.2vh">
+        <div class="mini" data-anim><span class="accent"></span><div class="mm">ORGA · 01</div><div class="mt">眼睛 · 读取</div><div class="md">读文档、网页、图片、文件内容</div></div>
+        <div class="mini" data-anim><span class="accent"></span><div class="mm">ORGA · 02</div><div class="mt">大脑 · 思考</div><div class="md">理解目标、规划步骤、判断优先级</div></div>
+        <div class="mini" data-anim><span class="accent"></span><div class="mm">ORGA · 03</div><div class="mt">双手 · 执行</div><div class="md">操作文件、安装工具、跑命令</div></div>
+        <div class="mini" data-anim><span class="accent"></span><div class="mm">ORGA · 04</div><div class="mt">记事本 · 状态</div><div class="md">保存任务进度、记录中间结果</div></div>
+        <div class="mini" data-anim><span class="accent"></span><div class="mm">ORGA · 05</div><div class="mt">质检员 · 校验</div><div class="md">检查结果、发现问题、回到上一步</div></div>
+      </div>
+
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第二关 · 演示</div>
+    <div>22 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame grid-2-7-5" style="padding-top:5vh">
+      <figure class="frame-img r-16x10" data-anim style="margin:0">
+        <img src="images/22-workbuddy.jpg" alt="">
+        <figcaption class="img-cap">22 / 70</figcaption>
+      </figure>
+      <div style="display:flex; flex-direction:column; justify-content:space-between; gap:2.4vh; min-height:68vh">
+        <div>
+          <div class="kicker" data-anim>演示 · 整理校园活动</div>
+          <h2 class="h-xl" data-anim>WorkBuddy 演示 · 从混乱到一周表</h2>
+          <p class="lead" data-anim style="margin-top:2.4vh; max-width:38vw; opacity:.82">现场把 4 份资料丢给它：3 份活动通知、1 份课程表、1 份比赛报名要求、1 份个人目标。<br>它需要输出一周安排、冲突提醒、截止排序、准备清单和推荐。</p>
+        </div>
+        <div class="callout" data-anim>
+          <b style="font-family:var(--serif-zh);font-weight:700;font-size:max(15px,1.25vw);line-height:1.4;display:block">演示看行为，不看菜单。<br>重点观察它<b style="color:var(--accent)">会主动做什么</b>，<br>不是看它会什么功能。</b>
+          <div class="callout-src">— 输入 / 输出 / 检查</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第二关 · 观察</div>
+    <div>23 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" style="padding-top:5vh">
+      <div class="kicker" data-anim>观察 · 5 个关键点</div>
+      <h2 class="h-xl" data-anim style="max-width:80vw">观察 WorkBuddy 怎样「干活」</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">演示过程里，重点看这 5 件事——任何一件出问题，结果就可能不可信。</p>
+      <div class="dlist " style="margin-top:3.2vh">
+          <div class="di" data-anim><div class="dn">01</div><div class="dt">是否<em>真的读取了全部文件</em>，而不是凭印象回答</div></div>
+          <div class="di" data-anim><div class="dn">02</div><div class="dt">是否<em>主动拆解任务</em>，而不是一次返回一大段</div></div>
+          <div class="di" data-anim><div class="dn">03</div><div class="dt">是否<em>创建了实际文件</em>，或只是在对话框里说</div></div>
+          <div class="di" data-anim><div class="dn">04</div><div class="dt">遇到<em>不确定内容</em>时是否主动询问，而不是猜</div></div>
+          <div class="di" data-anim><div class="dn">05</div><div class="dt">收到<b>修改意见</b>后是否继续执行，还是要你从头来</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第二关 · 验收</div>
+    <div>24 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame tight" style="padding-top:5vh">
+      <div class="kicker" data-anim>验收 · 智能体交付后</div>
+      <h2 class="h-xl" data-anim>怎样验收智能体的结果？</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">不是看它「完成没」，而是看 5 个具体问题。任何一个过不去，都不要发布。</p>
+      <div class="r5" style="margin-top:3.4vh; display:flex; flex-direction:column; gap:0">
+        <div class="rowline" data-anim><div class="k">完整性</div><div class="v">三份通知是不是全部处理了？</div><div class="m">COMPLETE</div></div>
+        <div class="rowline" data-anim><div class="k">准确性</div><div class="v">时间、日期、地点是否正确？</div><div class="m">CORRECT</div></div>
+        <div class="rowline" data-anim><div class="k">逻辑性</div><div class="v">推荐理由讲不讲得通？</div><div class="m">LOGICAL</div></div>
+        <div class="rowline" data-anim><div class="k">可用性</div><div class="v">表格能否直接复制到日历？</div><div class="m">USABLE</div></div>
+        <div class="rowline" data-anim><div class="k">安全性</div><div class="v">是否暴露个人敏感信息？</div><div class="m">SAFE</div></div>
+      </div>
+          <div class="band3">
+              <div class="bd" data-anim><div class="bl">Order</div><div class="bt">验收顺序</div><div class="bdd">先看全不全 → 再看对不对 → 最后看能不能直接用。</div></div>
+              <div class="bd hot" data-anim><div class="bl">Rule</div><div class="bt">一条硬规则</div><div class="bdd">任何一个问题过不去，就不要发布。</div></div>
+              <div class="bd" data-anim><div class="bl">Habit</div><div class="bt">值得养成的习惯</div><div class="bdd">每次交付都按这 5 问过一遍，比事后返工省得多。</div></div>
+          </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第二关 · 第二个任务</div>
+    <div>25 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame tight" style="padding-top:5vh">
+      <div class="kicker" data-anim>需求 · 作品展示网页</div>
+      <h2 class="h-xl" data-anim style="max-width:80vw">做一个作品展示网页，需要包含什么？</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">3 人小组、非设计专业、7 天完成。<br>8 个内容模块是必填，下面是清单——不会写代码，应该从哪里开始？</p>
+      <div class="dlist d8" style="margin-top:3.2vh">
+          <div class="di" data-anim><div class="dn">01</div><div class="dt"><b>项目名称</b>：给作品起一个能记得住的名字</div></div>
+          <div class="di" data-anim><div class="dn">02</div><div class="dt"><b>主视觉海报</b>：未来校园主图 + 一句话简介</div></div>
+          <div class="di" data-anim><div class="dn">03</div><div class="dt"><b>短片播放器</b>：30 秒 MP4 + 字幕开关</div></div>
+          <div class="di" data-anim><div class="dn">04</div><div class="dt"><b>创意来源</b>：从哪个真实问题出发</div></div>
+          <div class="di" data-anim><div class="dn">05</div><div class="dt"><b>制作流程</b>：7 天的时间线 + 关键节点</div></div>
+          <div class="di" data-anim><div class="dn">06</div><div class="dt"><b>AI 工具</b>：用了哪几个 AI，分别做什么</div></div>
+          <div class="di" data-anim><div class="dn">07</div><div class="dt"><b>团队分工</b>：三个人各自负责什么</div></div>
+          <div class="di" data-anim><div class="dn">08</div><div class="dt"><b>GitHub 地址</b>：让评委能 clone 下来跑一遍</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第二关 · Codex 演示</div>
+    <div>26 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame grid-2-7-5" style="padding-top:5vh">
+      <div style="display:flex; flex-direction:column; gap:2vh; min-height:0">
+        <div>
+          <div class="kicker" data-anim style="margin-bottom:1.5vh">演示 · 从需求到可运行网页</div>
+          <h2 class="h-xl" data-anim style="font-size:4.4vw">Codex 演示 · 8 步走完整条链</h2>
+          <p class="lead" data-anim style="margin-top:1.2vh; max-width:42vw; opacity:.78; font-size:1.35vw">Codex 是面向代码和项目的 AI 智能体。现场演示从一段需求开始，到一个能点开的网页。</p>
+        </div>
+        <div class="pipeline p7" data-cols="4" data-anim style="grid-template-columns:repeat(2,1fr); gap:.8vh 1.4vw; margin-top:.6vh">
+          <div class="step" data-anim="step"><div class="step-nb">01</div><div class="step-title">描述需求</div><div class="step-desc">用一段话说清楚要做什么</div></div>
+          <div class="step" data-anim="step"><div class="step-nb">02</div><div class="step-title">看项目</div><div class="step-desc">让它查看当前目录和已有文件</div></div>
+          <div class="step" data-anim="step"><div class="step-nb">03</div><div class="step-title">提计划</div><div class="step-desc">要求先给方案，再动手</div></div>
+          <div class="step" data-anim="step"><div class="step-nb">04</div><div class="step-title">建文件</div><div class="step-desc">创建 HTML / CSS / JS 文件</div></div>
+          <div class="step" data-anim="step"><div class="step-nb">05</div><div class="step-title">跑预览</div><div class="step-desc">启动本地服务器并打开</div></div>
+          <div class="step" data-anim="step"><div class="step-nb">06</div><div class="step-title">改样式</div><div class="step-desc">要求改颜色、改布局</div></div>
+          <div class="step" data-anim="step"><div class="step-nb">07</div><div class="step-title">看手机</div><div class="step-desc">检查移动端显示效果</div></div>
+          <div class="step" data-anim="step"><div class="step-nb">08</div><div class="step-title">写说明</div><div class="step-desc">总结这次改了哪些文件</div></div>
+        </div>
+      </div>
+      <figure class="frame-img r-16x10" data-anim style="margin:0; margin-top:1vh">
+        <img src="images/26-codex.jpg" alt="">
+        <figcaption class="img-cap">Vol.26 · Codex 界面示意</figcaption>
+      </figure>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第二关 · 收束</div>
+    <div>27 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" style="padding-top:5vh">
+      <div class="kicker" data-anim>对照 · 两位队友的分工</div>
+      <h2 class="h-xl" data-anim>WorkBuddy vs Codex · 两类不同队友</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">不是谁更强，是<b>谁干哪类活</b>。互相配合是常态。</p>
+      <div class="" style="margin-top:3.4vh; display:flex; flex-direction:column; gap:0">
+        <div class="rowline" data-anim><div class="k">主要对象</div><div class="v">文档、表格、资料、桌面任务</div><div class="m">代码、网页、应用、软件项目</div></div>
+        <div class="rowline" data-anim><div class="k">典型任务</div><div class="v">整理资料、生成报告、处理文件</div><div class="m">创建程序、修改代码、运行测试</div></div>
+        <div class="rowline" data-anim><div class="k">适合人群</div><div class="v">广泛的办公与学习用户</div><div class="m">编程学习者、开发者、产品人员</div></div>
+        <div class="rowline" data-anim><div class="k">最低要求</div><div class="v">明确目标、合理授权、检查结果</div><div class="m">明确目标、合理授权、检查结果</div></div>
+      </div>
+
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide hero dark">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第三关 · 让 AI 听懂你</div>
+    <div>28 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" style="display:grid; gap:3.4vh; align-content:center; min-height:80vh">
+      <div class="kicker" data-anim>失败现场</div>
+      <h1 class="qbig" style="font-size:6vw">
+        <span data-anim style="display:block">"帮我做一个</span>
+        <span data-anim style="display:block"><em style="font-family:var(--serif-en);font-style:italic;color:var(--accent)">很酷</em></span>
+        <span data-anim style="display:block">的视频"</span>
+      </h1>
+      <p class="lead" data-anim style="max-width:55vw; opacity:.78">AI 不知道：主题、观众、时长、风格、平台、已有素材，以及「很酷」的标准。</p>
+      <p class="lead" data-anim style="margin-top:2.2vh; max-width:50vw"><em style="font-family:var(--serif-en);font-style:italic;color:var(--accent);font-weight:700">模糊输入，通常只能得到碰运气的结果。</em></p>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第三关 · 提示词</div>
+    <div>29 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" style="padding-top:5vh">
+      <div class="kicker" data-anim>反例 · 5 句"任务"</div>
+      <h2 class="h-xl" data-anim style="max-width:80vw">如果同学这样布置任务，你能完成吗？</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">把每句话读一遍，再想想你自己接到会怎么办。</p>
+      <div class="dlist " style="margin-top:3.2vh">
+          <div class="di" data-anim><div class="dn">01</div><div class="dt">"<em>你随便做一下。</em>"——随便到什么程度？</div></div>
+          <div class="di" data-anim><div class="dn">02</div><div class="dt">"<em>反正要高级一点。</em>"——高级的标准是什么？</div></div>
+          <div class="di" data-anim><div class="dn">03</div><div class="dt">"<em>我想要那种感觉。</em>"——哪种感觉？</div></div>
+          <div class="di" data-anim><div class="dn">04</div><div class="dt">"<em>你应该懂我的意思。</em>"——我不懂你</div></div>
+          <div class="di" data-anim><div class="dn">05</div><div class="dt">"<em>先做出来，我再告诉你哪里不对。</em>"——成本全在 AI</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第三关 · 提示词</div>
+    <div>30 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" style="padding-top:5vh">
+      <div class="kicker" data-anim>开工前 · 6 个必答题</div>
+      <h2 class="h-xl" data-anim>让 AI 开工前，先回答 6 个问题</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">把这 6 个问题写进 prompt 第一段，能省掉后面 80% 的修改。</p>
+      <div class="trio" style="margin-top:3.2vh">
+        <div class="mini" data-anim><span class="accent"></span><div class="mm">TASK · 01</div><div class="mt">完成什么任务</div><div class="md">一句话说清要做什么</div></div>
+        <div class="mini" data-anim><span class="accent"></span><div class="mm">TASK · 02</div><div class="mt">给谁使用</div><div class="md">目标用户是谁、什么场景下用</div></div>
+        <div class="mini" data-anim><span class="accent"></span><div class="mm">TASK · 03</div><div class="mt">为什么要做</div><div class="md">这个问题值得解决吗</div></div>
+        <div class="mini" data-anim><span class="accent"></span><div class="mm">TASK · 04</div><div class="mt">已经有什么资料</div><div class="md">可以喂给 AI 的素材</div></div>
+        <div class="mini" data-anim><span class="accent"></span><div class="mm">TASK · 05</div><div class="mt">有什么限制</div><div class="md">时间 / 预算 / 合规 / 风格</div></div>
+        <div class="mini" data-anim><span class="accent"></span><div class="mm">TASK · 06</div><div class="mt">交付什么格式</div><div class="md">文件类型 + 长度 + 语言</div></div>
+      </div>
+
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第三关 · 案例</div>
+    <div>31 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" style="padding-top:5vh">
+      <div class="kicker" data-anim>互动 · 第一次尝试</div>
+      <h2 class="h-xl" data-anim style="max-width:80vw">帮我写一个校园故事</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">典型平庸结果：<br>主角努力学习 → 遇到困难 → 朋友鼓励 → 最终成功 → 明白坚持的重要性。<br>请回答 4 个问题：</p>
+      <div class="dlist " style="margin-top:3.2vh">
+          <div class="di" data-anim><div class="dn">01</div><div class="dt">人物真实吗？——像是 18 岁大一学生说的话吗</div></div>
+          <div class="di" data-anim><div class="dn">02</div><div class="dt">冲突够强吗？——真的需要解决，还是只想要安慰</div></div>
+          <div class="di" data-anim><div class="dn">03</div><div class="dt">有校园细节吗？——食堂、宿舍、晚自习、宿舍熄灯</div></div>
+          <div class="di" data-anim><div class="dn">04</div><div class="dt">你愿意看完吗？——会不会半路划走</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide hero light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第三关 · 案例</div>
+    <div>32 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" data-animate="quote" style="display:grid; gap:3.6vh; align-content:center; min-height:80vh; padding:2vh 0">
+      <div class="kicker" data-anim>第二次尝试 · 写清楚背景</div>
+      <blockquote style="font-family:var(--serif-zh); font-weight:700; font-size:4.5vw; line-height:1.18; letter-spacing:-.01em; max-width:78vw">
+        <span data-anim="line" style="display:block">"主角是一名不敢主动社交的大一新生。</span>
+        <span data-anim="line" style="display:block">为了完成小组作业，他训练了一个 AI</span>
+        <span data-anim="line" style="display:block">替自己说话。但在最终汇报前，</span>
+        <span data-anim="line" style="display:block">AI 突然拒绝继续帮助他。"</span>
+      </blockquote>
+      <p class="lead" data-anim style="max-width:60vw; opacity:.7">主角 / 目标 / 冲突 / 场景 / 风格 / 时长——<br>这 6 项都说清楚了，结果就从「鸡汤」变成了「故事」。</p>
+      <div class="meta-row" data-anim>
+        <span>案例来源：改编自公开课真实作业</span><span>·</span><span>你 + AI = 未来</span>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第三关 · 提示词</div>
+    <div>33 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame grid-2-7-5" style="padding-top:5vh">
+      <div style="display:flex; flex-direction:column; justify-content:space-between; gap:2.4vh; min-height:68vh">
+        <div>
+          <div class="kicker" data-anim>结构 · 任务说明书</div>
+          <h2 class="h-xl" data-anim>提示词不是咒语，是任务说明书</h2>
+          <p class="lead" data-anim style="margin-top:2.4vh; max-width:38vw; opacity:.82">把 prompt 当成你给新同事的一封邮件。<br>写得越清楚，返工越少。</p>
+        </div>
+        <div class="callout" data-anim>
+          <b style="font-family:var(--serif-zh);font-weight:700;font-size:max(17px,1.5vw);line-height:1.5;display:block">背景 + 目标 + 对象 + 资料 + 要求 + 格式<br>= 一次说清的 prompt</b>
+          <div class="callout-src">— 现场观察</div>
+        </div>
+      </div>
+      <figure class="frame-img r-16x10" data-anim style="margin:0">
+        <img src="images/33-prompt.jpg" alt="">
+        <figcaption class="img-cap">校园 AI 入门 · 第三关 · 提示词</figcaption>
+      </figure>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide hero light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第三关 · 提示词</div>
+    <div>34 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" data-animate="quote" style="display:grid; gap:3.6vh; align-content:center; min-height:80vh; padding:2vh 0">
+      <div class="kicker" data-anim>让 AI 反过来问</div>
+      <blockquote style="font-family:var(--serif-zh); font-weight:700; font-size:4.5vw; line-height:1.18; letter-spacing:-.01em; max-width:78vw">
+        <span data-anim="line" style="display:block">"在开始之前，</span>
+        <span data-anim="line" style="display:block">请先向我提出 5 个最关键的问题。</span>
+        <span data-anim="line" style="display:block">得到回答后，再制定方案。"</span>
+      </blockquote>
+      <p class="lead" data-anim style="max-width:60vw; opacity:.7">复杂任务，把<b>定义权</b>先还给你。<br>AI 可能会问：观众、平台、团队、素材、截止时间。</p>
+      <div class="meta-row" data-anim>
+        <span>适用场景：方案不明确、需求还在变</span><span>·</span><span>你 + AI = 未来</span>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第三关 · 反馈</div>
+    <div>35 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" data-animate="directional" style="padding-top:5vh">
+      <div class="kicker" data-anim>对比 · 反馈的两种写法</div>
+      <h2 class="h-xl" data-anim>第一版不好，不代表任务失败</h2>
+      <div class="grid-2-6-6" style="margin-top:3.6vh; gap:3vw 4vh">
+        <div data-anim="left" style="padding:2.6vh 2vw; border-left:3px solid currentColor; opacity:.55">
+          <div class="kicker" style="opacity:.9; margin-bottom:1vh">模糊反馈 · 等于没反馈</div>
+          <h3 class="h-md">说不出为什么不对</h3>
+          <ul style="margin-top:2vh; padding-left:1.2em; display:flex; flex-direction:column; gap:1.1vh; font-family:var(--sans-zh); font-size:max(14px,1.12vw); line-height:1.55">
+            <li>「再好一点」</li>
+            <li>「不够高级」</li>
+            <li>「感觉不对」</li>
+            <li>「有点土」</li>
+            <li>「你看着办」</li>
+          </ul>
+        </div>
+        <div data-anim="right" style="padding:2.6vh 2vw; border-left:3px solid currentColor">
+          <div class="kicker" style="opacity:.9; margin-bottom:1vh">有效反馈 · 能直接改</div>
+          <h3 class="h-md">能立刻动手改</h3>
+          <ul style="margin-top:2vh; padding-left:1.2em; display:flex; flex-direction:column; gap:1.1vh; font-family:var(--sans-zh); font-size:max(14px,1.12vw); line-height:1.55">
+            <li>「主角说话太像成年人」</li>
+            <li>「第二幕太慢，压缩到 30 秒」</li>
+            <li>「保留剧情，把对白改得更口语」</li>
+            <li>「加一个真实宿舍生活细节」</li>
+            <li>「结尾不要总结道理，用行动表现」</li>
+          </ul>
+        </div>
+      </div>
+          <div class="band3">
+              <div class="bd" data-anim><div class="bl">Test</div><div class="bt">一条判断标准</div><div class="bdd">能直接翻译成一个动作的反馈，才是有效反馈。</div></div>
+              <div class="bd hot" data-anim><div class="bl">Method</div><div class="bt">一个公式</div><div class="bdd">说清「哪里 + 为什么不对 + 想要什么样」。</div></div>
+              <div class="bd" data-anim><div class="bl">Speed</div><div class="bt">省在哪</div><div class="bdd">反馈越具体，改到满意所需的轮次就越少。</div></div>
+          </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide hero light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第三关 · 收束</div>
+    <div>36 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" data-animate="quote" style="display:grid; gap:2.6vh; align-content:center; min-height:80vh; padding:2vh 0">
+      <div class="kicker" data-anim>任务卡 · 写下来</div>
+      <blockquote style="font-family:var(--serif-zh); font-weight:700; font-size:3.7vw; line-height:1.18; letter-spacing:-.01em; max-width:78vw">
+        <span data-anim="line" style="display:block">「我要完成【　】<br>给【　】使用<br>使用场景是【　】<br>已经有【　】<br>必须满足【　】<br>最终交付【　】<br>请按【　】自检」</span>
+      </blockquote>
+      <p class="lead" data-anim style="max-width:60vw; opacity:.7">一张可带走的卡。<br>下次接到任何任务，先把这张卡填完，再开 prompt。</p>
+      <div class="meta-row" data-anim>
+        <span>— Vol.03 · 提示词工具卡</span><span>·</span><span>你 + AI = 未来</span>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第四关 · AI 知识库</div>
+    <div>37 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" style="padding-top:5vh">
+      <div class="kicker" data-anim>第四关开始</div>
+      <h2 class="h-xl" data-anim style="max-width:80vw">AI 为什么不知道学校下周的活动？</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">它知道很多公开知识，但通常<b>不知道你的最新资料和内部信息</b>。具体可能发生 5 种情况：</p>
+      <div class="dlist " style="margin-top:3.2vh">
+          <div class="di" data-anim><div class="dn">01</div><div class="dt"><em>可能完全不知道</em>——你学校的活动不在公网</div></div>
+          <div class="di" data-anim><div class="dn">02</div><div class="dt"><em>可能根据常识猜测</em>——听起来合理但是错的</div></div>
+          <div class="di" data-anim><div class="dn">03</div><div class="dt"><em>可能给出过期活动</em>——训练数据是 2024 年的</div></div>
+          <div class="di" data-anim><div class="dn">04</div><div class="dt"><em>可能混入其他学校</em>——同名的活动到处都是</div></div>
+          <div class="di" data-anim><div class="dn">05</div><div class="dt"><em>可能把传言当正式通知</em>——群聊截图都信</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第四关 · AI 知识库</div>
+    <div>38 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" style="padding-top:5vh">
+      <div class="kicker" data-anim>提问 · 把资料交给 AI</div>
+      <h2 class="h-xl" data-anim style="max-width:80vw">如果把学校资料交给 AI 呢？</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">新生手册、课程安排、社团介绍、校园地图、学校制度、比赛材料、个人笔记、老师课件——都能喂给它。</p>
+      <div class="dlist " style="margin-top:3.2vh">
+          <div class="di" data-anim><div class="dn">01</div><div class="dt"><b>校园资料</b>：新生手册 / 制度汇编 / 校园地图</div></div>
+          <div class="di" data-anim><div class="dn">02</div><div class="dt"><b>课程资料</b>：课程安排 / 老师课件 / 历年试卷</div></div>
+          <div class="di" data-anim><div class="dn">03</div><div class="dt"><b>个人资料</b>：笔记 / 错题 / 任务清单</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第四关 · AI 知识库</div>
+    <div>39 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" style="padding-top:5vh">
+      <div class="kicker" data-anim>现场实验 · 5 个问题</div>
+      <h2 class="h-xl" data-anim style="max-width:80vw">只根据新生手册回答</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">现场准备一份新生手册 PDF。问 AI 这 5 个问题，看它能否引用原文 / 答不上的题会不会承认。</p>
+      <div class="dlist " style="margin-top:3.2vh">
+          <div class="di" data-anim><div class="dn">01</div><div class="dt">图书馆如何<em>预约座位</em>？</div></div>
+          <div class="di" data-anim><div class="dn">02</div><div class="dt">校园卡<em>丢失</em>后怎么办？</div></div>
+          <div class="di" data-anim><div class="dn">03</div><div class="dt">申请<em>教室</em>需要哪些流程？</div></div>
+          <div class="di" data-anim><div class="dn">04</div><div class="dt">宿舍有哪些<em>安全要求</em>？</div></div>
+          <div class="di" data-anim><div class="dn">05</div><div class="dt">答案位于手册<em>第几页</em>？</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第四关 · 知识库</div>
+    <div>40 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame grid-2-7-5" style="padding-top:5vh">
+      <div style="display:flex; flex-direction:column; justify-content:space-between; gap:2.4vh; min-height:68vh">
+        <div>
+          <div class="kicker" data-anim>定义 · 最直观的样子</div>
+          <h2 class="h-xl" data-anim>AI 知识库 = 把资料整理后交给 AI</h2>
+          <p class="lead" data-anim style="margin-top:2.4vh; max-width:38vw; opacity:.82">用户提问 → 查找相关资料 → 把内容交给 AI → 组织答案 → 返回出处。</p>
+        </div>
+        <div class="callout" data-anim>
+          <b style="font-family:var(--serif-zh);font-weight:700;font-size:max(17px,1.5vw);line-height:1.45;display:block">「先检索，再生成」——<br>这就是 RAG 时代的 AI 工作方式，<br>也是大学知识库最直接的样子。</b>
+          <div class="callout-src">— 现场观察</div>
+        </div>
+      </div>
+      <figure class="frame-img r-16x10" data-anim style="margin:0">
+        <img src="images/40-kb.jpg" alt="">
+        <figcaption class="img-cap">校园 AI 入门 · 第四关 · 知识库</figcaption>
+      </figure>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第四关 · 知识库</div>
+    <div>41 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame tight" style="padding-top:5vh">
+      <div class="kicker" data-anim>分类 · 大学生可以建什么</div>
+      <h2 class="h-xl" data-anim>6 类知识库 · 几乎人人用得上</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">每一类都对应一个真实场景。挑你最先需要的那个开始。</p>
+      <div class="r6" style="margin-top:3.4vh; display:flex; flex-direction:column; gap:0">
+        <div class="rowline" data-anim><div class="k">课程复习库</div><div class="v">课件 / 笔记 / 作业 / 错题</div><div class="m">STUDY</div></div>
+        <div class="rowline" data-anim><div class="k">论文阅读库</div><div class="v">论文 PDF / 术语表 / 阅读记录</div><div class="m">RESEARCH</div></div>
+        <div class="rowline" data-anim><div class="k">比赛项目库</div><div class="v">规则 / 案例 / 方案 / 反馈</div><div class="m">PROJECT</div></div>
+        <div class="rowline" data-anim><div class="k">社团资料库</div><div class="v">流程 / 手册 / 往期资料</div><div class="m">CLUB</div></div>
+        <div class="rowline" data-anim><div class="k">求职信息库</div><div class="v">岗位 / 简历 / 面试记录</div><div class="m">JOB</div></div>
+        <div class="rowline" data-anim><div class="k">个人作品库</div><div class="v">项目介绍 / 素材 / 创作记录</div><div class="m">PORTFOLIO</div></div>
+      </div>
+          <div class="band3">
+              <div class="bd" data-anim><div class="bl">Start</div><div class="bt">从哪一个开始</div><div class="bdd">挑一个你最近正发愁的场景，先建那一个。</div></div>
+              <div class="bd hot" data-anim><div class="bl">Grow</div><div class="bt">别想一次建全</div><div class="bdd">知识库是长出来的，不是一次搭完的。</div></div>
+              <div class="bd" data-anim><div class="bl">Rule</div><div class="bt">一条原则</div><div class="bdd">会反复用到的资料才值得入库，只用一次的不必。</div></div>
+          </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第四关 · 知识库</div>
+    <div>42 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame tight" style="padding-top:5vh">
+      <div class="kicker" data-anim>警告 · 资料越多 ≠ 越聪明</div>
+      <h2 class="h-xl" data-anim style="max-width:80vw">资料越多，知识库不一定越聪明</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">以下 7 种情况，每一种都会让知识库变笨，而不是变强。</p>
+      <div class="dlist d7" style="margin-top:3.2vh">
+          <div class="di" data-anim><div class="dn">01</div><div class="dt">同一份通知<em>保存 5 个版本</em>，AI 不知道听谁的</div></div>
+          <div class="di" data-anim><div class="dn">02</div><div class="dt">文件都叫<em>「最终版」</em>，分不清新旧</div></div>
+          <div class="di" data-anim><div class="dn">03</div><div class="dt"><em>旧制度没有删除</em>，新员工看到的是过期版</div></div>
+          <div class="di" data-anim><div class="dn">04</div><div class="dt"><em>扫描 PDF</em> 无法搜索，AI 看不到内容</div></div>
+          <div class="di" data-anim><div class="dn">05</div><div class="dt"><em>笔记没有标题</em>，AI 不知道这篇在讲什么</div></div>
+          <div class="di" data-anim><div class="dn">06</div><div class="dt">不同资料<em>互相矛盾</em>，AI 只能二选一猜</div></div>
+          <div class="di" data-anim><div class="dn">07</div><div class="dt"><em>网络资料</em>没有来源，AI 不知道能不能信</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第四关 · 知识库</div>
+    <div>43 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame tight" style="padding-top:5vh">
+      <div class="kicker" data-anim>流程 · 8 步大扫除</div>
+      <h2 class="h-xl" data-anim style="max-width:80vw">给 AI 喂资料前，先做一次大扫除</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">这一步是知识库质量的天花板。宁愿慢一周，也要先做这一步。</p>
+      <div class="dlist d8" style="margin-top:3.2vh">
+          <div class="di" data-anim><div class="dn">01</div><div class="dt">删除<em>重复文件</em>（同一份 PDF 留最新版）</div></div>
+          <div class="di" data-anim><div class="dn">02</div><div class="dt">标记<em>日期和版本</em>（YYYY-MM-DD 写在文件名）</div></div>
+          <div class="di" data-anim><div class="dn">03</div><div class="dt"><em>统一命名</em>（课程_老师_年份_版本.pdf）</div></div>
+          <div class="di" data-anim><div class="dn">04</div><div class="dt">区分<em>草稿</em>与正式资料（加前缀 DRAFT_）</div></div>
+          <div class="di" data-anim><div class="dn">05</div><div class="dt">扫描件<em>转可搜索文本</em>（OCR 后校对）</div></div>
+          <div class="di" data-anim><div class="dn">06</div><div class="dt">补充<em>资料来源</em>（每份标 URL / 出处）</div></div>
+          <div class="di" data-anim><div class="dn">07</div><div class="dt">按<em>课程或项目</em>分类（建立子文件夹）</div></div>
+          <div class="di" data-anim><div class="dn">08</div><div class="dt"><em>定期删除</em>过期资料（每学期一次）</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第四关 · 知识库</div>
+    <div>44 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame tight" style="padding-top:5vh">
+      <div class="kicker" data-anim>边界 · 哪些不要上传</div>
+      <h2 class="h-xl" data-anim style="max-width:80vw">不是所有资料都应该上传</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">判断问题：<br><em>这份资料如果被陌生人看到，会不会产生风险？</em><br>会 → 不上传。</p>
+      <div class="dlist d8" style="margin-top:3.2vh">
+          <div class="di" data-anim><div class="dn">01</div><div class="dt"><b>身份证 / 银行卡 / 户籍</b>信息</div></div>
+          <div class="di" data-anim><div class="dn">02</div><div class="dt"><b>联系方式</b>（电话、地址、家庭信息）</div></div>
+          <div class="di" data-anim><div class="dn">03</div><div class="dt"><b>账号密码</b>、登录态、二维码</div></div>
+          <div class="di" data-anim><div class="dn">04</div><div class="dt"><b>未公开成绩</b>、处分记录、心理评估</div></div>
+          <div class="di" data-anim><div class="dn">05</div><div class="dt"><b>同学照片</b>（人脸识别风险）</div></div>
+          <div class="di" data-anim><div class="dn">06</div><div class="dt"><b>内部会议</b>记录、未公开财报</div></div>
+          <div class="di" data-anim><div class="dn">07</div><div class="dt"><b>商业秘密</b>、合同条款、报价单</div></div>
+          <div class="di" data-anim><div class="dn">08</div><div class="dt"><b>保密研究</b>资料、未发表论文</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide hero dark">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第五关 · 给作品装上时光机</div>
+    <div>45 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" style="display:grid; gap:6vh; align-content:center; min-height:80vh">
+      <div class="kicker" data-anim>失败现场</div>
+      <h1 class="qbig" style="font-size:7.4vw">
+        <span data-anim style="display:block">AI 把网页改坏了，</span>
+        <span data-anim style="display:block">现在怎么办？</span>
+      </h1>
+      <p class="lead" data-anim style="max-width:55vw; opacity:.78">你可能遇过这 5 件事中的至少 3 件——</p>
+      <p class="lead" data-anim style="margin-top:4vh; max-width:50vw"><em style="font-family:var(--serif-en);font-style:italic;color:var(--accent);font-weight:700">AI 一次改多文件 / 突然不能跑 / 不知道改了哪 / 没有备份 / 同事同时改</em></p>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第五关 · 文件名悲剧</div>
+    <div>46 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame grid-2-7-5" style="padding-top:5vh">
+      <div style="display:flex; flex-direction:column; gap:2.4vh; min-height:68vh">
+        <div>
+          <div class="kicker" data-anim>共鸣 · 你一定见过</div>
+          <h2 class="h-xl" data-anim>你一定见过这样的文件夹</h2>
+          <p class="lead" data-anim style="margin-top:1.6vh; max-width:42vw; opacity:.78">同一份 PPT 的 6 个「最终版」，是版本管理缺失的症状。这 6 个文件名，你手机里也能找到。</p>
+        </div>
+        <div class="files6" data-anim style="flex:0 0 auto">
+          <div class="fn"><div class="fi">01</div><div>项目.pptx</div></div>
+          <div class="fn"><div class="fi">02</div><div>项目最终版.pptx</div></div>
+          <div class="fn"><div class="fi">03</div><div>项目最终版2.pptx</div></div>
+          <div class="fn"><div class="fi">04</div><div>项目真的最终版.pptx</div></div>
+          <div class="fn"><div class="fi">05</div><div>项目最后不改版.pptx</div></div>
+          <div class="fn"><div class="fi">06</div><div>项目最后不改版修改.pptx</div></div>
+        </div>
+      </div>
+      <figure class="frame-img r-16x10" data-anim style="margin:0; margin-top:1vh">
+        <img src="images/46-files.jpg" alt="">
+        <figcaption class="img-cap">Vol.46 · 文件版本灾难</figcaption>
+      </figure>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第五关 · 时光机</div>
+    <div>47 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" style="padding-top:5vh">
+      <div class="kicker" data-anim>理念 · 6 项存档</div>
+      <h2 class="h-xl" data-anim style="max-width:80vw">如果每次重要修改都能自动存档</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">自动存档记录以下 6 项中的每一条——版本管理是数字作品的<b>基本保险</b>。</p>
+      <div class="dlist d6" style="margin-top:3.2vh">
+          <div class="di" data-anim><div class="dn">01</div><div class="dt"><b>谁修改</b>——个人 / 协作者 / AI</div></div>
+          <div class="di" data-anim><div class="dn">02</div><div class="dt"><b>修改了哪些文件</b>——路径 + 行数变化</div></div>
+          <div class="di" data-anim><div class="dn">03</div><div class="dt"><b>为什么修改</b>——一句话的提交说明</div></div>
+          <div class="di" data-anim><div class="dn">04</div><div class="dt"><b>修改时间</b>——精确到分钟</div></div>
+          <div class="di" data-anim><div class="dn">05</div><div class="dt"><b>哪个版本可运行</b>——CI 通过的快照</div></div>
+          <div class="di" data-anim><div class="dn">06</div><div class="dt"><b>如何恢复</b>——任意版本一键回滚</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第五关 · Git 时光机</div>
+    <div>48 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame grid-2-7-5" style="padding-top:5vh">
+      <div style="display:flex; flex-direction:column; justify-content:space-between; gap:2.4vh; min-height:68vh">
+        <div>
+          <div class="kicker" data-anim>概念 · 不讲命令行</div>
+          <h2 class="h-xl" data-anim>Git = 项目的「时光机」</h2>
+          <p class="lead" data-anim style="margin-top:2.4vh; max-width:38vw; opacity:.82">先理解「记录 / 比较 / 恢复」三个动词。<br>命令行以后再说，今天先让你相信这件事。</p>
+        </div>
+        <div class="callout" data-anim>
+          <b style="font-family:var(--serif-zh);font-weight:700;font-size:max(17px,1.5vw);line-height:1.45;display:block">7 天项目里有 20+ 个版本很常见。<br>第 6 天发现第 3 天的版本更好，<br>没时光机 = 全部重做。</b>
+          <div class="callout-src">— 现场观察</div>
+        </div>
+      </div>
+      <figure class="frame-img r-16x10" data-anim style="margin:0">
+        <img src="images/48-git.jpg" alt="">
+        <figcaption class="img-cap">校园 AI 入门 · 第五关 · Git 时光机</figcaption>
+      </figure>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第五关 · GitHub</div>
+    <div>49 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame grid-2-7-5" style="padding-top:5vh">
+      <figure class="frame-img r-16x10" data-anim style="margin:0">
+        <img src="images/49-github.jpg" alt="">
+        <figcaption class="img-cap">49 / 70</figcaption>
+      </figure>
+      <div style="display:flex; flex-direction:column; justify-content:space-between; gap:2.4vh; min-height:68vh">
+        <div>
+          <div class="kicker" data-anim>概念 · 线上基地</div>
+          <h2 class="h-xl" data-anim>GitHub 像项目的「线上基地」</h2>
+          <p class="lead" data-anim style="margin-top:2.4vh; max-width:38vw; opacity:.82">Git 记录版本；GitHub 托管、协作、<b>展示</b>项目。<br>这两件事不一样。</p>
+        </div>
+        <div class="callout" data-anim>
+          <b style="font-family:var(--serif-zh);font-weight:700;font-size:max(17px,1.5vw);line-height:1.45;display:block">没有 README 的项目，<br>在 GitHub 上几乎等于不存在——<br>翻到第 50 页，看看 README 怎么写。</b>
+          <div class="callout-src">— 输入 / 输出 / 检查</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第五关 · README</div>
+    <div>50 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame tight" style="padding-top:5vh">
+      <div class="kicker" data-anim>方法 · 打开项目先看什么</div>
+      <h2 class="h-xl" data-anim style="max-width:80vw">打开一个项目，先看 README</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">一份合格的 README 回答 8 个问题。下面这 8 问任何一项缺失，协作者都会卡住。</p>
+      <div class="dlist d8" style="margin-top:3.2vh">
+          <div class="di" data-anim><div class="dn">01</div><div class="dt">项目<em>是什么</em></div></div>
+          <div class="di" data-anim><div class="dn">02</div><div class="dt">解决<em>什么问题</em></div></div>
+          <div class="di" data-anim><div class="dn">03</div><div class="dt"><em>给谁</em>使用</div></div>
+          <div class="di" data-anim><div class="dn">04</div><div class="dt">效果<em>如何</em></div></div>
+          <div class="di" data-anim><div class="dn">05</div><div class="dt">怎样<em>运行</em></div></div>
+          <div class="di" data-anim><div class="dn">06</div><div class="dt">用了<em>什么工具</em></div></div>
+          <div class="di" data-anim><div class="dn">07</div><div class="dt">作者<em>是谁</em></div></div>
+          <div class="di" data-anim><div class="dn">08</div><div class="dt">下一步<em>做什么</em></div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第五关 · GitHub 操作</div>
+    <div>51 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame tight" style="padding-top:5vh">
+      <div class="kicker" data-anim>术语 · 6 个常见动词</div>
+      <h2 class="h-xl" data-anim>Fork、Clone、Download、Star 的区别</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">不只背名词——每个动作背后是<b>一次不同的协作意图</b>。</p>
+      <div class="r6" style="margin-top:3.4vh; display:flex; flex-direction:column; gap:0">
+        <div class="rowline" data-anim><div class="k">Star</div><div class="v">收藏项目</div><div class="m">FOLLOW</div></div>
+        <div class="rowline" data-anim><div class="k">Download ZIP</div><div class="v">下载当前文件快照</div><div class="m">SNAPSHOT</div></div>
+        <div class="rowline" data-anim><div class="k">Clone</div><div class="v">复制完整项目 + 版本历史</div><div class="m">LOCAL COPY</div></div>
+        <div class="rowline" data-anim><div class="k">Fork</div><div class="v">复制到自己账号下</div><div class="m">YOUR COPY</div></div>
+        <div class="rowline" data-anim><div class="k">Commit</div><div class="v">保存一次有说明的修改</div><div class="m">SNAPSHOT+NOTE</div></div>
+        <div class="rowline" data-anim><div class="k">Pull Request</div><div class="v">请求合并自己的修改</div><div class="m">PROPOSE</div></div>
+      </div>
+
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第五关 · 收束</div>
+    <div>52 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame tight" style="padding-top:5vh">
+      <div class="kicker" data-anim>场景 · Codex + GitHub</div>
+      <h2 class="h-xl" data-anim style="max-width:80vw">让 Codex 帮助管理 GitHub 项目</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">Codex 不只是写代码，它还能帮你<b>读仓库、改 README、提 PR</b>。</p>
+      <div class="dlist d8" style="margin-top:3.2vh">
+          <div class="di" data-anim><div class="dn">01</div><div class="dt">阅读<em>仓库结构</em>并解释每个目录</div></div>
+          <div class="di" data-anim><div class="dn">02</div><div class="dt"><em>解释代码</em>：逐函数 / 逐文件</div></div>
+          <div class="di" data-anim><div class="dn">03</div><div class="dt">生成或<em>更新 README</em></div></div>
+          <div class="di" data-anim><div class="dn">04</div><div class="dt"><em>修改项目文件</em>（代码 / 文档 / 配置）</div></div>
+          <div class="di" data-anim><div class="dn">05</div><div class="dt"><em>运行测试</em>并报告失败原因</div></div>
+          <div class="di" data-anim><div class="dn">06</div><div class="dt">查找<em>错误</em>并定位到具体行</div></div>
+          <div class="di" data-anim><div class="dn">07</div><div class="dt">总结<em>本次修改</em>了哪些文件</div></div>
+          <div class="di" data-anim><div class="dn">08</div><div class="dt">编写<em>提交说明</em>（commit message）</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide hero light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第六关 · 短片主角</div>
+    <div>53 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame grid-2-7-5" style="padding-top:5vh">
+      <div style="display:flex; flex-direction:column; gap:2vh; min-height:68vh">
+        <div>
+          <div class="kicker" data-anim>互动 · 全场投票</div>
+          <h2 class="h-xl" data-anim>"未来校园" 短片应该讲谁？</h2>
+          <p class="lead" data-anim style="margin-top:1.6vh; max-width:42vw; opacity:.78">6 位候选主角。选一个获胜者，后面的故事和分镜围绕他/她展开。</p>
+        </div>
+        <div class="cand6" data-anim style="margin-top:1vh">
+          <div class="cd" data-anim><div class="cn">01</div><div class="ct">第一天入学的新生</div></div>
+        <div class="cd" data-anim><div class="cn">02</div><div class="ct">送餐机器人</div></div>
+        <div class="cd" data-anim><div class="cn">03</div><div class="ct">会说话的图书馆</div></div>
+        <div class="cd" data-anim><div class="cn">04</div><div class="ct">来自未来的自己</div></div>
+        <div class="cd" data-anim><div class="cn">05</div><div class="ct">被 AI 唤醒的旧电脑</div></div>
+        <div class="cd" data-anim><div class="cn">06</div><div class="ct">拥有记忆的校园卡</div></div>
+        </div>
+      </div>
+      <figure class="frame-img r-16x9" data-anim style="margin:0; margin-top:1vh">
+        <img src="images/53-hero.jpg" alt="" style="object-position:center 30%">
+        <figcaption class="img-cap">Vol.53 · 主视觉候选</figcaption>
+      </figure>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide hero light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第六关 · 故事</div>
+    <div>54 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" data-animate="quote" style="display:grid; gap:3.6vh; align-content:center; min-height:80vh; padding:2vh 0">
+      <div class="kicker" data-anim>公式 · 一句话说清故事</div>
+      <blockquote style="font-family:var(--serif-zh); font-weight:700; font-size:4.5vw; line-height:1.18; letter-spacing:-.01em; max-width:78vw">
+        <span data-anim="line" style="display:block">"一个【怎样的人】</span>
+        <span data-anim="line" style="display:block">为了【什么目标】</span>
+        <span data-anim="line" style="display:block">遇到【什么阻碍】</span>
+        <span data-anim="line" style="display:block">最后必须【做出怎样的选择】"</span>
+      </blockquote>
+      <p class="lead" data-anim style="max-width:60vw; opacity:.7">把四个槽位填完，<br>你就有了第一稿故事大纲——<br>剩下的只是把它写长。</p>
+      <div class="meta-row" data-anim>
+        <span>案例：不敢社交的新生 → 完成小组作业 → 训练 AI 替自己说话 → AI 突然拒绝</span><span>·</span><span>你 + AI = 未来</span>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第六关 · 选择</div>
+    <div>55 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" style="padding-top:5vh">
+      <div class="kicker" data-anim>对比 · 3 个版本</div>
+      <h2 class="h-xl" data-anim>AI 给了三个版本，我们怎么选？</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">三条不同的故事方向，<br>选一个最适合 30 秒短片的。</p>
+      <div class="" style="margin-top:3.4vh; display:flex; flex-direction:column; gap:0">
+        <div class="rowline" data-anim><div class="k">喜剧版</div><div class="v">AI 教错社交方式</div><div class="m">轻松、传播强</div></div>
+        <div class="rowline" data-anim><div class="k">悬疑版</div><div class="v">AI 知道校园秘密</div><div class="m">抓人、节奏紧</div></div>
+        <div class="rowline" data-anim><div class="k">温情版</div><div class="v">AI 帮主角面对自己</div><div class="m">共鸣、怕说教</div></div>
+      </div>
+
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第六关 · 角色</div>
+    <div>56 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame grid-2-7-5" style="padding-top:5vh">
+      <div style="display:flex; flex-direction:column; justify-content:space-between; gap:2.4vh; min-height:68vh">
+        <div>
+          <div class="kicker" data-anim>一致性 · 7 项固定</div>
+          <h2 class="h-xl" data-anim>让角色在不同画面中保持一致</h2>
+          <p class="lead" data-anim style="margin-top:2.4vh; max-width:38vw; opacity:.82">年龄身份、发型脸部、衣服颜色、性格、标志物品、常用动作、画面风格——<br>这 7 项一旦定了，<b>每次都把它写进 prompt</b>。</p>
+        </div>
+        <div class="callout" data-anim>
+          <b style="font-family:var(--serif-zh);font-weight:700;font-size:max(17px,1.5vw);line-height:1.45;display:block">示例：<br>18 岁大一男生 · 短黑发 · 蓝色连帽衫<br>银灰书包 · 发光校园卡 · 惊讶表情</b>
+          <div class="callout-src">— 现场观察</div>
+        </div>
+      </div>
+      <figure class="frame-img r-16x10" data-anim style="margin:0">
+        <img src="images/56-character.jpg" alt="">
+        <figcaption class="img-cap">校园 AI 入门 · 第六关 · 角色</figcaption>
+      </figure>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第六关 · 画风</div>
+    <div>57 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" style="padding-top:5vh">
+      <div class="kicker" data-anim>对比 · 同一句话</div>
+      <h2 class="h-xl" data-anim>同一句话，三种完全不同的画面</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">"蓝色连帽衫的大一新生站在未来图书馆前，校园卡发出蓝紫色光芒。"<br>三种画风，三种情绪。</p>
+      <div class="img3" style="margin-top:3.2vh">
+        <figure data-anim><img src="images/57-anime.jpg" alt=""><figcaption><span>动漫 · 夸张 / 角色感强</span><span>01 / 03</span></figcaption></figure>
+        <figure data-anim><img src="images/57-film.jpg" alt=""><figcaption><span>电影写实 · 沉浸 / 适合剧情</span><span>02 / 03</span></figcaption></figure>
+        <figure data-anim><img src="images/57-poster.jpg" alt=""><figcaption><span>未来海报 · 视觉冲击 / 适合宣传</span><span>03 / 03</span></figcaption></figure>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第六关 · 生图</div>
+    <div>58 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame tight" style="padding-top:5vh">
+      <div class="kicker" data-anim>公式 · 8 要素</div>
+      <h2 class="h-xl" data-anim style="max-width:80vw">一条好用的生图描述包含什么？</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">这 8 项不一定要全部出现，但<b>缺得越多，AI 越要自己猜</b>。</p>
+      <div class="dlist d8" style="margin-top:3.2vh">
+          <div class="di" data-anim><div class="dn">01</div><div class="dt"><b>主体</b>——大一男生、穿蓝色连帽衫</div></div>
+          <div class="di" data-anim><div class="dn">02</div><div class="dt"><b>环境</b>——未来感大学图书馆门口</div></div>
+          <div class="di" data-anim><div class="dn">03</div><div class="dt"><b>动作</b>——举起校园卡</div></div>
+          <div class="di" data-anim><div class="dn">04</div><div class="dt"><b>构图</b>——低角度中景 / 居中</div></div>
+          <div class="di" data-anim><div class="dn">05</div><div class="dt"><b>光线</b>——电影灯光 / 神秘但不恐怖</div></div>
+          <div class="di" data-anim><div class="dn">06</div><div class="dt"><b>风格</b>——动漫 / 写实 / 海报</div></div>
+          <div class="di" data-anim><div class="dn">07</div><div class="dt"><b>色彩</b>——深靛蓝 / 蓝紫光 / 珊瑚橙点缀</div></div>
+          <div class="di" data-anim><div class="dn">08</div><div class="dt"><b>画面比例</b>——16:9 / 16:10 / 9:16</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第六关 · 翻车</div>
+    <div>59 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame tight" style="padding-top:5vh">
+      <div class="kicker" data-anim>警告 · 7 种翻车</div>
+      <h2 class="h-xl" data-anim style="max-width:80vw">AI 生图常见翻车现场</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">7 种典型翻车 + 5 个通用解法。</p>
+      <div class="dlist d7" style="margin-top:3.2vh">
+          <div class="di" data-anim><div class="dn">01</div><div class="dt"><em>多手多脚</em>——人物数量减少 / 局部生成</div></div>
+          <div class="di" data-anim><div class="dn">02</div><div class="dt"><em>衣服突然变</em>——固定描述 + 局部重画</div></div>
+          <div class="di" data-anim><div class="dn">03</div><div class="dt"><em>背景文字乱码</em>——后期手动替换</div></div>
+          <div class="di" data-anim><div class="dn">04</div><div class="dt"><em>人物年龄不稳定</em>——同参考图输入</div></div>
+          <div class="di" data-anim><div class="dn">05</div><div class="dt"><em>多角色相互融合</em>——一次只画一个</div></div>
+          <div class="di" data-anim><div class="dn">06</div><div class="dt"><em>没给标题留位置</em>——主体偏左 / 偏右</div></div>
+          <div class="di" data-anim><div class="dn">07</div><div class="dt"><em>风格前后不一致</em>——风格词固定写在 prompt 头部</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第六关 · 视频</div>
+    <div>60 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" style="padding-top:5vh">
+      <div class="kicker" data-anim>公式 · 6 要素</div>
+      <h2 class="h-xl" data-anim style="max-width:80vw">视频不是描述画面，而是描述变化</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">生图描述的是「这一刻」。<br>生视频描述的是「从 A 到 B」。</p>
+      <div class="dlist d6" style="margin-top:3.2vh">
+          <div class="di" data-anim><div class="dn">01</div><div class="dt"><b>谁在动</b>——学生 / 校园卡 / 镜头</div></div>
+          <div class="di" data-anim><div class="dn">02</div><div class="dt"><b>怎样动</b>——缓慢抬起 / 推近 / 拉远</div></div>
+          <div class="di" data-anim><div class="dn">03</div><div class="dt"><b>镜头怎么动</b>——中景推到特写</div></div>
+          <div class="di" data-anim><div class="dn">04</div><div class="dt"><b>场景如何变</b>——背景灯光逐渐亮起</div></div>
+          <div class="di" data-anim><div class="dn">05</div><div class="dt"><b>持续多久</b>——3 秒 / 5 秒</div></div>
+          <div class="di" data-anim><div class="dn">06</div><div class="dt"><b>停在哪里</b>——最后停在惊讶表情</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第六关 · 分镜</div>
+    <div>61 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" style="padding-top:5vh; display:flex; flex-direction:column; min-height:0">
+      <div class="kicker" data-anim>拆解 · 5 个镜头</div>
+      <h2 class="h-xl" data-anim>不要一次生成整部电影，先拆成镜头</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">5 个镜头 × 平均 3 秒 = 15 秒的成片。<br>把每个镜头的「画面 / 景别 / 时长」写清楚再让 AI 生成。</p>
+      <div class="sbwrap">
+        <div class="storyboard" style="grid-template-columns: 1.4em 3fr 1.2fr 1fr; gap:0 1.4vw">
+        <div class="sh">镜头</div>
+        <div class="sh">画面 / 动作</div>
+        <div class="sh">景别</div>
+        <div class="sh">时长</div>
+        <div class="sn">01</div>
+        <div class="sc k">未来校园夜景 · 主角进入画面</div>
+        <div class="sc">远景</div>
+        <div class="sc">3 秒</div>
+        <div class="sn">02</div>
+        <div class="sc k">图书馆门口 · 校园卡发光</div>
+        <div class="sc">中景</div>
+        <div class="sc">3 秒</div>
+        <div class="sn">03</div>
+        <div class="sc k">校园卡 · 光线形成 AI 影像</div>
+        <div class="sc">特写</div>
+        <div class="sc">3 秒</div>
+        <div class="sn">04</div>
+        <div class="sc k">主角面部 · 露出惊讶表情</div>
+        <div class="sc">近景</div>
+        <div class="sc">2 秒</div>
+        <div class="sn">05</div>
+        <div class="sc k">AI 助手 · 发出邀请手势</div>
+        <div class="sc">中景</div>
+        <div class="sc">4 秒</div>
+      </div>
+        <figure class="frame-img r-4x3" data-anim style="max-height:38vh"><img src="images/61-storyboard.jpg" alt="" style="object-position:center 42%"><figcaption class="img-cap">Vol.06 · 五镜头分镜示意</figcaption></figure>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+  <section class="slide dark" data-animate="cascade" style="padding:6vh 6vw 10vh">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第六关 · 流水线</div>
+    <div>62 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame tight">
+      <div class="kicker" data-anim>流程 · 12 步流水线</div>
+      <h2 class="h-xl" data-anim>一支 AI 短片，是 12 个环节拼出来的</h2>
+      <p class="lead" data-anim style="margin-top:1.4vh; max-width:64vw; opacity:.78">AI 是创作团队，人承担<b>导演和总编辑</b>。任何一个环节卡住，都要把前一步拿出来重做。</p>
+      <div class="pipeline p12" data-cols="12" style="margin-top:3.6vh">
+          <div class="step" data-anim="step"><div class="step-nb">01</div><div class="step-title">主题</div><div class="step-desc">确定一个具体题目</div></div>
+        <div class="step" data-anim="step"><div class="step-nb">02</div><div class="step-title">故事创意</div><div class="step-desc">一句话故事 + 公式四槽</div></div>
+        <div class="step" data-anim="step"><div class="step-nb">03</div><div class="step-title">人物设定</div><div class="step-desc">年龄 / 服装 / 标志物</div></div>
+        <div class="step" data-anim="step"><div class="step-nb">04</div><div class="step-title">故事大纲</div><div class="step-desc">5 镜头分镜表</div></div>
+        <div class="step" data-anim="step"><div class="step-nb">05</div><div class="step-title">人物图</div><div class="step-desc">参考图固定</div></div>
+        <div class="step" data-anim="step"><div class="step-nb">06</div><div class="step-title">场景图</div><div class="step-desc">每个镜头 1 张主图</div></div>
+        <div class="step" data-anim="step"><div class="step-nb">07</div><div class="step-title">短视频</div><div class="step-desc">镜头级 3-5 秒</div></div>
+        <div class="step" data-anim="step"><div class="step-nb">08</div><div class="step-title">旁白配音</div><div class="step-desc">AI 配音 + 文案</div></div>
+        <div class="step" data-anim="step"><div class="step-nb">09</div><div class="step-title">背景音乐</div><div class="step-desc">授权或免版权来源</div></div>
+        <div class="step" data-anim="step"><div class="step-nb">10</div><div class="step-title">剪辑字幕</div><div class="step-desc">剪映 / CapCut</div></div>
+        <div class="step" data-anim="step"><div class="step-nb">11</div><div class="step-title">版权审核</div><div class="step-desc">音乐 / 人脸 / 引用</div></div>
+        <div class="step" data-anim="step"><div class="step-nb">12</div><div class="step-title">导出成片</div><div class="step-desc">横版 16:9 + 竖版 9:16</div></div>
+      </div>
+
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第六关 · 发布前</div>
+    <div>63 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame tight" style="padding-top:5vh">
+      <div class="kicker" data-anim>检查 · 8 项</div>
+      <h2 class="h-xl" data-anim style="max-width:80vw">作品发布前，做一次 AI 内容检查</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">以下 8 项中任何一项不过，都不要发布。</p>
+      <div class="dlist d8" style="margin-top:3.2vh">
+          <div class="di" data-anim><div class="dn">01</div><div class="dt"><em>人物是否一致</em>——跨镜头服装、脸型不能变</div></div>
+          <div class="di" data-anim><div class="dn">02</div><div class="dt"><em>情节是否易懂</em>——给一个没看过的人看一遍</div></div>
+          <div class="di" data-anim><div class="dn">03</div><div class="dt"><em>音乐是否有授权</em>——平台不一定替你扛版权</div></div>
+          <div class="di" data-anim><div class="dn">04</div><div class="dt"><em>是否冒用真实人物</em>——AI 换脸是雷区</div></div>
+          <div class="di" data-anim><div class="dn">05</div><div class="dt"><em>是否像虚假新闻</em>——避免被截图造谣</div></div>
+          <div class="di" data-anim><div class="dn">06</div><div class="dt"><em>是否泄露隐私</em>——背景里的姓名牌、聊天记录</div></div>
+          <div class="di" data-anim><div class="dn">07</div><div class="dt"><em>是否标注 AI 参与</em>——合规且保护自己</div></div>
+          <div class="di" data-anim><div class="dn">08</div><div class="dt"><em>是否保留素材来源</em>——过程记录是作品的一部分</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide hero dark">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第七关 · 让作品被看到</div>
+    <div>64 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" style="display:grid; gap:6vh; align-content:center; min-height:80vh">
+      <div class="kicker" data-anim>价值 · 6 个理由</div>
+      <h1 class="qbig" style="font-size:7.4vw">
+        <span data-anim style="display:block">如果作品只躺在电脑里，</span>
+        <span data-anim style="display:block">它很难产生价值。</span>
+      </h1>
+      <p class="lead" data-anim style="max-width:55vw; opacity:.78">发布可以：</p>
+      <p class="lead" data-anim style="margin-top:4vh; max-width:50vw"><em style="font-family:var(--serif-en);font-style:italic;color:var(--accent);font-weight:700">获得反馈 / 找到同好 / 建立作品集 / 记录成长 / 证明能力 / 获得机会</em></p>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第七关 · 渠道</div>
+    <div>65 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame tight" style="padding-top:5vh">
+      <div class="kicker" data-anim>对照 · 5 类作品 × 5 个舞台</div>
+      <h2 class="h-xl" data-anim>不同作品，适合不同舞台</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">别把视频丢进知乎，把文章丢进 B 站。</p>
+      <div class="r5" style="margin-top:3.4vh; display:flex; flex-direction:column; gap:0">
+        <div class="rowline" data-anim><div class="k">网页与程序</div><div class="v">GitHub Pages / 个人网站</div><div class="m">功能 · 体验 · 代码</div></div>
+        <div class="rowline" data-anim><div class="k">AI 短片</div><div class="v">B 站 / 抖音 / 视频号</div><div class="m">故事 · 画面 · 节奏</div></div>
+        <div class="rowline" data-anim><div class="k">海报与图片</div><div class="v">小红书 / 作品集平台</div><div class="m">视觉 · 过程 · 提示词</div></div>
+        <div class="rowline" data-anim><div class="k">文章与教程</div><div class="v">公众号 / 知乎 / 博客</div><div class="m">方法 · 经验 · 案例</div></div>
+        <div class="rowline" data-anim><div class="k">完整项目</div><div class="v">README / 个人作品集</div><div class="m">问题 · 方案 · 成果 · 反思</div></div>
+      </div>
+          <div class="band3">
+              <div class="bd" data-anim><div class="bl">Match</div><div class="bt">匹配原则</div><div class="bdd">看作品形态，也看这个舞台上的人想看什么。</div></div>
+              <div class="bd hot" data-anim><div class="bl">Wrong</div><div class="bt">最常见的错误</div><div class="bdd">把视频丢进知乎，把长文丢进抖音。</div></div>
+              <div class="bd" data-anim><div class="bl">Bonus</div><div class="bt">发对地方的好处</div><div class="bdd">反馈来得更快，下一版才知道该往哪改。</div></div>
+          </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第七关 · 作品介绍</div>
+    <div>66 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame tight" style="padding-top:5vh">
+      <div class="kicker" data-anim>结构 · 8 步</div>
+      <h2 class="h-xl" data-anim style="max-width:80vw">一个好的作品介绍，应该讲什么？</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">不要只写「本作品由 AI 一键生成」——那等于没写。</p>
+      <div class="dlist d8" style="margin-top:3.2vh">
+          <div class="di" data-anim><div class="dn">01</div><div class="dt"><b>发现了什么问题</b>——真实、未被解决</div></div>
+          <div class="di" data-anim><div class="dn">02</div><div class="dt"><b>为什么做这个项目</b>——个人动机或社会价值</div></div>
+          <div class="di" data-anim><div class="dn">03</div><div class="dt"><b>给谁使用</b>——目标用户画像</div></div>
+          <div class="di" data-anim><div class="dn">04</div><div class="dt"><b>选择什么方案</b>——为什么是 A 而不是 B</div></div>
+          <div class="di" data-anim><div class="dn">05</div><div class="dt"><b>AI 帮助哪些部分</b>——诚实标注</div></div>
+          <div class="di" data-anim><div class="dn">06</div><div class="dt"><b>自己完成哪些判断</b>——你的贡献在哪</div></div>
+          <div class="di" data-anim><div class="dn">07</div><div class="dt"><b>遇到什么困难</b>——技术 / 协作 / 时间</div></div>
+          <div class="di" data-anim><div class="dn">08</div><div class="dt"><b>下一步怎么改进</b>——版本 2 计划</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第七关 · 能力组合</div>
+    <div>67 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame tight" style="padding-top:5vh">
+      <div class="kicker" data-anim>趋势 · 7 个组合</div>
+      <h2 class="h-xl" data-anim style="max-width:80vw">未来需要的不是单纯「会用 AI 的人」</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">真正稀缺的是<b>专业能力 × AI 能力 × 解决问题能力</b>。</p>
+      <div class="dlist d7" style="margin-top:3.2vh">
+          <div class="di" data-anim><div class="dn">01</div><div class="dt">教育 <b>+</b> AI = 个性化学习产品</div></div>
+          <div class="di" data-anim><div class="dn">02</div><div class="dt">设计 <b>+</b> AI = 生成式视觉创作</div></div>
+          <div class="di" data-anim><div class="dn">03</div><div class="dt">管理 <b>+</b> AI = 业务智能体</div></div>
+          <div class="di" data-anim><div class="dn">04</div><div class="dt">新闻 <b>+</b> AI = 数据与内容生产</div></div>
+          <div class="di" data-anim><div class="dn">05</div><div class="dt">医学 <b>+</b> AI = 临床辅助工具</div></div>
+          <div class="di" data-anim><div class="dn">06</div><div class="dt">金融 <b>+</b> AI = 智能分析应用</div></div>
+          <div class="di" data-anim><div class="dn">07</div><div class="dt">计算机 <b>+</b> AI = AI 应用开发</div></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide dark">
+  <div class="chrome">
+    <div>校园 AI 入门 · 第七关 · 你在哪</div>
+    <div>68 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame tight" style="padding-top:5vh">
+      <div class="kicker" data-anim>互动 · 6 种创作者</div>
+      <h2 class="h-xl" data-anim>你可能成为哪一种 AI 创作者？</h2>
+      <p class="lead" data-anim style="margin-top:1.6vh; max-width:62vw; opacity:.78">挑一个最像自己的方向，未来 4 年慢慢长成它。</p>
+      <div class="r6" style="margin-top:3.4vh; display:flex; flex-direction:column; gap:0">
+        <div class="rowline" data-anim><div class="k">喜欢想创意</div><div class="v">AI 内容策划 · 故事设计</div><div class="m">STORY</div></div>
+        <div class="rowline" data-anim><div class="k">喜欢视觉</div><div class="v">AI 生图 · 视频 · 交互</div><div class="m">VISUAL</div></div>
+        <div class="rowline" data-anim><div class="k">喜欢动手搭建</div><div class="v">AI 应用与智能体开发</div><div class="m">BUILD</div></div>
+        <div class="rowline" data-anim><div class="k">喜欢整理资料</div><div class="v">知识库建设 · 信息管理</div><div class="m">KNOWLEDGE</div></div>
+        <div class="rowline" data-anim><div class="k">喜欢分析需求</div><div class="v">AI 产品经理 · 解决方案</div><div class="m">PRODUCT</div></div>
+        <div class="rowline" data-anim><div class="k">喜欢规则伦理</div><div class="v">AI 安全 · 评测 · 治理</div><div class="m">ETHICS</div></div>
+      </div>
+          <div class="band3">
+              <div class="bd" data-anim><div class="bl">Notice</div><div class="bt">这不是定型</div><div class="bdd">选一个方向，不等于放弃其他可能性。</div></div>
+              <div class="bd hot" data-anim><div class="bl">Scale</div><div class="bt">放在 4 年尺度看</div><div class="bdd">方向会随着你做过的事慢慢长出来。</div></div>
+              <div class="bd" data-anim><div class="bl">Next</div><div class="bt">下一步</div><div class="bdd">第七关最后一件事：把作品发出去，让它被人看到。</div></div>
+          </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide hero light">
+  <div class="chrome">
+    <div>校园 AI 入门 · 回到开场</div>
+    <div>69 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame" data-animate="quote" style="display:grid; gap:3.6vh; align-content:center; min-height:80vh; padding:2vh 0">
+      <div class="kicker" data-anim>现在，你怎样理解 AI？</div>
+      <blockquote style="font-family:var(--serif-zh); font-weight:700; font-size:4.5vw; line-height:1.18; letter-spacing:-.01em; max-width:78vw">
+        <span data-anim="line" style="display:block">AI 可以是助手、</span>
+        <span data-anim="line" style="display:block">智能体、知识库、</span>
+        <span data-anim="line" style="display:block">编程队友和创作团队。</span>
+      </blockquote>
+      <p class="lead" data-anim style="max-width:60vw; opacity:.7">但仍需要人来：<br>提出目标 · 提供背景 · 选择工具 · 检查事实 · 判断质量 · 承担责任。</p>
+      <div class="meta-row" data-anim>
+        <span>互动：重新回答第 4 页的 7 级能力刻度</span><span>·</span><span>你 + AI = 未来</span>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+<section class="slide hero dark">
+  <div class="chrome">
+    <div>校园 AI 入门 · 七天挑战 · 结尾</div>
+    <div>70 / 70</div>
+  </div>
+  <div class="fitbox">
+    <div class="frame closing-frame" style="display:grid; grid-template-columns:1.05fr 1fr; gap:3vw; align-content:start; align-items:start; min-height:0">
+      <div style="display:flex; flex-direction:column; gap:2vh; max-width:48vw; min-width:0">
+        <div class="kicker" data-anim style="margin-bottom:0">Vol.70 · 行动</div>
+        <h1 class="h-hero" data-anim style="font-size:6vw; line-height:1.02">
+          <span data-anim style="display:block">未来 7 天，<br>完成你的第一个 AI 作品</span>
+        </h1>
+        <p class="lead" data-anim style="max-width:46vw; opacity:.82; font-size:1.55vw">从下面 6 个挑战里挑 1 个，<br>或自己定义一个。</p>
+        <p class="lead" data-anim style="margin-top:1.2vh; font-family:var(--serif-en); font-style:italic; color:var(--accent); font-size:max(16px,1.25vw); max-width:44vw; line-height:1.38">"别把 AI 只留在聊天框里。<br>用它完成一件真正属于你的作品。"</p>
+      </div>
+      <div style="display:flex; flex-direction:column; gap:1vh; min-width:0">
+        <figure class="frame-img r-16x10" data-anim style="margin:0; max-height:23vh">
+          <img src="images/70-closing.jpg" alt="" style="object-position:center 40%">
+          <figcaption class="img-cap">Vol.70 · 未来 7 天</figcaption>
+        </figure>
+        <div class="kicker" data-anim style="margin:0; font-size:11px">7 天可挑战的 6 件事</div>
+        <div class="trio" data-anim style="grid-template-columns:repeat(2,1fr); gap:.9vh .9vw">
+          <div class="mini" data-anim style="background:rgba(var(--paper-rgb),.05)"><div class="mm" style="opacity:.55">选项 01</div><div class="mt">一张 AI 校园海报</div></div>
+        <div class="mini" data-anim style="background:rgba(var(--paper-rgb),.05)"><div class="mm" style="opacity:.55">选项 02</div><div class="mt">一支 30 秒 AI 短片</div></div>
+        <div class="mini" data-anim style="background:rgba(var(--paper-rgb),.05)"><div class="mm" style="opacity:.55">选项 03</div><div class="mt">一门课程复习知识库</div></div>
+        <div class="mini" data-anim style="background:rgba(var(--paper-rgb),.05)"><div class="mm" style="opacity:.55">选项 04</div><div class="mt">一个简单作品网页</div></div>
+        <div class="mini" data-anim style="background:rgba(var(--paper-rgb),.05)"><div class="mm" style="opacity:.55">选项 05</div><div class="mt">一个 GitHub 项目</div></div>
+        <div class="mini" data-anim style="background:rgba(var(--paper-rgb),.05)"><div class="mm" style="opacity:.55">选项 06</div><div class="mt">一个校园智能体方案</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="rule" style="margin:1.2vh 0; opacity:.25"></div>
+    <div style="margin-top:auto; display:flex; flex-direction:column; gap:.7vh">
+      <div class="kicker" data-anim style="margin-bottom:0; font-size:11px">行动卡 · 写下来你真正想做的</div>
+      <div class="actioncard" data-anim style="margin:0; max-width:none; display:grid; grid-template-columns:repeat(2,1fr); gap:.6vh 2.4vw; padding:1.8vh 1.8vw">
+        <div class="al" data-anim><span class="lb">我要完成：</span><span class="vl">任务</span></div>
+        <div class="al" data-anim><span class="lb">主要给谁：</span><span class="vl">用户</span></div>
+        <div class="al" data-anim><span class="lb">完成时间：</span><span class="vl">YYYY-MM-DD</span></div>
+        <div class="al" data-anim><span class="lb">发布在哪：</span><span class="vl">平台 / URL</span></div>
+      </div>
+    </div>
+  </div>
+  <div class="foot">
+    <div>《你 + AI = 未来》· 大学新生 AI 科普讲座</div>
+    <div>— 周轶彬 —</div>
+  </div>
+</section>
+
+
+</div>
+
+<div id="nav"></div>
+
+<script>
+/* =============== WebGL 双背景 ===============
+   深色页：Holographic Dispersion（全息色散 · 钛金暗流）—— 彩虹微扰、鼠标径向涟漪
+   浅色页：Spiral Vortex（旋转涡流 · 银色珍珠）—— domain-warp 流动、无中心
+   修改风格请参考 references/webgl-backgrounds.md
+*/
+const VS = `attribute vec2 position;void main(){gl_Position=vec4(position,0.0,1.0);}`;
+
+const FS_DARK = `precision highp float;
+uniform vec2 u_resolution;uniform float u_time;uniform vec2 u_mouse;
+vec3 palette(float t,vec3 a,vec3 b,vec3 c,vec3 d){return a+b*cos(6.28318*(c*t+d));}
+void main(){
+  vec2 uv=gl_FragCoord.xy/u_resolution.xy;
+  vec2 p=uv*2.0-1.0;p.x*=u_resolution.x/u_resolution.y;
+  vec2 m=u_mouse*2.0-1.0;m.x*=u_resolution.x/u_resolution.y;
+  float md=length(p-m);
+  float mr=sin(md*15.0-u_time*4.0)*exp(-md*3.0);p+=mr*0.08;
+  vec2 p0=p;
+  for(float i=1.0;i<4.0;i++){
+    p.x+=0.1/i*sin(i*3.0*p.y+u_time*0.4)+0.05;
+    p.y+=0.1/i*cos(i*2.0*p.x+u_time*0.3)-0.05;
+  }
+  float r=length(p);float ang=atan(p.y,p.x);
+  vec3 a=vec3(0.12,0.12,0.13);
+  vec3 b=vec3(0.03,0.04,0.05);
+  vec3 c=vec3(1.0,1.0,1.0);
+  vec3 d=vec3(0.1,0.2,0.4);
+  vec3 col=palette(r*1.5+p0.x*0.5+u_time*0.1,a,b,c,d);
+  float disp=sin(r*25.0-u_time*1.5+ang*2.0)*0.5+0.5;
+  col+=vec3(disp*0.015,disp*0.01,disp*0.02);
+  float hi=pow(sin(p.x*4.0+p.y*3.0+u_time)*0.5+0.5,8.0);
+  col+=hi*0.08;
+  vec3 base=vec3(0.05,0.05,0.06);
+  col=mix(base,col,0.85);
+  gl_FragColor=vec4(col,1.0);
+}`;
+
+const FS_LIGHT = `precision highp float;
+uniform vec2 u_resolution;uniform float u_time;uniform vec2 u_mouse;
+float hash(vec2 p){return fract(sin(dot(p,vec2(127.1,311.7)))*43758.5453);}
+float noise(vec2 p){
+  vec2 i=floor(p),f=fract(p);
+  float a=hash(i),b=hash(i+vec2(1,0));
+  float c=hash(i+vec2(0,1)),d=hash(i+vec2(1,1));
+  vec2 u=f*f*(3.0-2.0*f);
+  return mix(a,b,u.x)+(c-a)*u.y*(1.0-u.x)+(d-b)*u.x*u.y;
+}
+float fbm(vec2 p){
+  float v=0.0,a=0.5;
+  mat2 m=mat2(0.80,0.60,-0.60,0.80);
+  for(int i=0;i<5;i++){v+=a*noise(p);p=m*p*2.02;a*=0.5;}
+  return v;
+}
+void main(){
+  vec2 uv=gl_FragCoord.xy/u_resolution.xy;
+  vec2 p=uv;p.x*=u_resolution.x/u_resolution.y;
+  vec2 m=u_mouse;m.x*=u_resolution.x/u_resolution.y;
+  vec2 md=p-m;float dl=length(md);
+  p+=normalize(md+vec2(0.0001))*exp(-dl*5.0)*0.03;
+  vec2 q=vec2(fbm(p*1.8+u_time*0.07),fbm(p*1.8+vec2(5.2,1.3)+u_time*0.06));
+  vec2 r=vec2(fbm(p*2.0+q*1.3+vec2(1.7,9.2)+u_time*0.05),
+              fbm(p*2.0+q*1.3+vec2(8.3,2.8)+u_time*0.04));
+  float f=fbm(p*2.2+r*1.5);
+  vec3 silverDark=vec3(0.86,0.85,0.84);
+  vec3 paper=vec3(0.955,0.945,0.925);
+  vec3 col=mix(silverDark,paper,f);
+  float ph=r.x*2.2+u_time*0.35;
+  col+=vec3(0.78,0.62,0.92)*sin(ph)*0.055;
+  col+=vec3(0.55,0.72,0.95)*sin(ph*0.8+2.0)*0.05;
+  float hl=smoothstep(0.48,0.92,f);
+  col+=hl*0.06;
+  gl_FragColor=vec4(col,1.0);
+}`;
+
+const mouse={x:0.5,y:0.5};
+addEventListener('mousemove',e=>{mouse.x=e.clientX/innerWidth;mouse.y=e.clientY/innerHeight});
+
+function bootGL(canvasId, fsSrc){
+  const canvas=document.getElementById(canvasId);
+  const gl=canvas.getContext('webgl',{alpha:false,antialias:true});
+  if(!gl) return ()=>false;
+  const mk=(t,s)=>{const sh=gl.createShader(t);gl.shaderSource(sh,s);gl.compileShader(sh);return sh};
+  const prog=gl.createProgram();
+  gl.attachShader(prog,mk(gl.VERTEX_SHADER,VS));
+  gl.attachShader(prog,mk(gl.FRAGMENT_SHADER,fsSrc));
+  gl.linkProgram(prog);gl.useProgram(prog);
+  const buf=gl.createBuffer();
+  gl.bindBuffer(gl.ARRAY_BUFFER,buf);
+  gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,1,-1,-1,1,-1,1,1,-1,1,1]),gl.STATIC_DRAW);
+  const pos=gl.getAttribLocation(prog,'position');
+  gl.enableVertexAttribArray(pos);gl.vertexAttribPointer(pos,2,gl.FLOAT,false,0,0);
+  const lRes=gl.getUniformLocation(prog,'u_resolution');
+  const lT=gl.getUniformLocation(prog,'u_time');
+  const lM=gl.getUniformLocation(prog,'u_mouse');
+  const resize=()=>{
+    const d=Math.min(window.devicePixelRatio||1,2);
+    canvas.width=innerWidth*d;canvas.height=innerHeight*d;
+    gl.viewport(0,0,canvas.width,canvas.height);
+  };
+  addEventListener('resize',resize);resize();
+  return (tSec)=>{
+    gl.uniform2f(lRes,canvas.width,canvas.height);
+    gl.uniform1f(lT,tSec);
+    gl.uniform2f(lM,mouse.x,1-mouse.y);
+    gl.drawArrays(gl.TRIANGLES,0,6);
+    return true;
+  };
+}
+let drawDark=null, drawLight=null, glRAF=0, glT0=Date.now();
+function startGL(){
+  if(window.__lowPowerMode || glRAF) return;
+  if(!drawDark) drawDark=bootGL('bg-dark',FS_DARK);
+  if(!drawLight) drawLight=bootGL('bg-light',FS_LIGHT);
+  glT0=Date.now();
+  function loop(){
+    if(window.__lowPowerMode){glRAF=0;return;}
+    const t=(Date.now()-glT0)/1000;
+    drawDark(t);drawLight(t);
+    glRAF=requestAnimationFrame(loop);
+  }
+  glRAF=requestAnimationFrame(loop);
+}
+function stopGL(){
+  if(glRAF) cancelAnimationFrame(glRAF);
+  glRAF=0;
+}
+startGL();
+addEventListener('ppt-low-power-change', e=>{e.detail.on ? stopGL() : startGL();});
+
+// =============== 导航（翻页 / 圆点 / 键盘 / 滚轮 / 触屏） ===============
+const deck=document.getElementById('deck');
+const slides=deck.querySelectorAll('.slide');
+const nav=document.getElementById('nav');
+let idx=0,total=slides.length,lock=false;
+
+// 关键：矫正 deck 宽度为 total * 100vw，否则翻页会错位
+deck.style.width=(total*100)+'vw';
+
+slides.forEach((s,i)=>{
+  const b=document.createElement('button');
+  b.className='dot';b.dataset.i=i;b.setAttribute('aria-label','Page '+(i+1));
+  b.onclick=()=>go(i);
+  nav.appendChild(b);
+});
+
+function go(n){
+  if(lock)return;
+  idx=Math.max(0,Math.min(total-1,n));
+  window.__currentSlideIndex = idx;
+  deck.style.transform=`translateX(${-idx*100}vw)`;
+  nav.querySelectorAll('.dot').forEach((d,i)=>d.classList.toggle('active',i===idx));
+  /* 主题切换：优先读 data-theme，其次从 class（light/dark）推断 */
+  const el=slides[idx];
+  const th=el.dataset.theme || (el.classList.contains('light')?'light':(el.classList.contains('dark')?'dark':'dark'));
+  document.body.classList.toggle('light-bg',th==='light');
+  /* 动效：翻页过渡中段触发当前页的入场动画（由 motion-boot 注册） */
+  if(window.__playSlide) setTimeout(()=>window.__playSlide(idx), 450);
+  lock=true;setTimeout(()=>lock=false,700);
+}
+
+/* =============== ESC 索引视图 =============== */
+let overviewOn=false;
+const ov=document.createElement('div');
+ov.id='overview';
+ov.style.cssText='position:fixed;inset:0;z-index:100;background:rgba(var(--ink-rgb),.92);backdrop-filter:blur(12px);display:none;overflow-y:auto;padding:4vh 4vw';
+document.body.appendChild(ov);
+
+function buildOverview(){
+  ov.innerHTML='';
+  const grid=document.createElement('div');
+  grid.style.cssText='display:grid;grid-template-columns:repeat(4,1fr);gap:2vh 1.6vw;max-width:90vw;margin:0 auto';
+  slides.forEach((s,i)=>{
+    const card=document.createElement('div');
+    card.style.cssText='cursor:pointer;border-radius:6px;overflow:hidden;border:2px solid '+(i===idx?'rgba(var(--paper-rgb),.8)':'rgba(var(--paper-rgb),.15)')+';transition:border-color .2s';
+    card.onmouseenter=()=>card.style.borderColor='rgba(var(--paper-rgb),.6)';
+    card.onmouseleave=()=>card.style.borderColor=i===idx?'rgba(var(--paper-rgb),.8)':'rgba(var(--paper-rgb),.15)';
+    const wrap=document.createElement('div');
+    wrap.style.cssText='width:100%;aspect-ratio:16/9;overflow:hidden;position:relative;pointer-events:none;background:'+(s.classList.contains('light')?'var(--paper)':'var(--ink)');
+    const clone=s.cloneNode(true);
+    clone.style.cssText='width:100vw;height:100vh;transform:scale('+(1/4.5)+');transform-origin:top left;position:absolute;top:0;left:0;pointer-events:none';
+    wrap.appendChild(clone);
+    const label=document.createElement('div');
+    label.style.cssText='padding:6px 10px;font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--paper);opacity:.7';
+    label.textContent=(i+1)+' / '+total;
+    card.appendChild(wrap);
+    card.appendChild(label);
+    card.onclick=()=>{toggleOverview();go(i)};
+    grid.appendChild(card);
+  });
+  ov.appendChild(grid);
+}
+
+function toggleOverview(){
+  overviewOn=!overviewOn;
+  if(overviewOn){buildOverview();ov.style.display='block';}
+  else{ov.style.display='none';}
+}
+
+addEventListener('keydown',e=>{
+  if(e.key==='Escape'){e.preventDefault();toggleOverview();return;}
+  if(e.key && e.key.toLowerCase()==='b' && !e.metaKey && !e.ctrlKey && !e.altKey){
+    e.preventDefault();
+    window.__setLowPowerMode(!window.__lowPowerMode);
+    return;
+  }
+  if(overviewOn)return;
+  if(e.key==='ArrowRight'||e.key==='PageDown'||e.key===' '||e.key==='ArrowDown'){
+    if(window.__pipeAdvance && window.__pipeAdvance()) return;
+    go(idx+1);
+    return;
+  }
+  if(e.key==='ArrowLeft'||e.key==='PageUp'||e.key==='ArrowUp')go(idx-1);
+  if(e.key==='Home')go(0);
+  if(e.key==='End')go(total-1);
+});
+
+let wheelTO=null,wheelAcc=0;
+addEventListener('wheel',e=>{
+  wheelAcc+=e.deltaY+e.deltaX;
+  if(Math.abs(wheelAcc)>50){
+    if(wheelAcc>0 && window.__pipeAdvance && window.__pipeAdvance()){
+      wheelAcc=0;
+    }else{
+      go(idx+(wheelAcc>0?1:-1));wheelAcc=0;
+    }
+  }
+  clearTimeout(wheelTO);wheelTO=setTimeout(()=>wheelAcc=0,150);
+},{passive:true});
+
+let tx=0,ty=0;
+addEventListener('touchstart',e=>{tx=e.touches[0].clientX;ty=e.touches[0].clientY},{passive:true});
+addEventListener('touchend',e=>{
+  const dx=(e.changedTouches[0].clientX-tx);
+  const dy=(e.changedTouches[0].clientY-ty);
+  if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)){
+    if(dx<0 && window.__pipeAdvance && window.__pipeAdvance()) return;
+    go(idx+(dx<0?1:-1));
+  }
+},{passive:true});
+
+go(0);
+</script>
+<script src="https://unpkg.com/lucide@latest/dist/umd/lucide.min.js"></script>
+<script>lucide.createIcons();</script>
+
+<!-- ============ Motion One 动效引擎（本地优先,CDN 兜底） ============
+     加载策略:先 ./assets/motion.min.js(本地,离线可用),失败 fallback 到 jsDelivr CDN
+     加载完成后挂 window.__playSlide / window.__pipeAdvance,
+     导航脚本会在翻页中段调用 __playSlide(idx),键盘/滚轮/触屏会在翻页前调用 __pipeAdvance()
+     双双失败时会兜底把所有 [data-anim] 设为可见,不让动效破坏阅读
+-->
+<script type="module">
+let motion;
+try {
+  motion = await import('./assets/motion.min.js');
+} catch(e1) {
+  try {
+    motion = await import('https://cdn.jsdelivr.net/npm/motion@11.11.17/+esm');
+  } catch(e2) {
+    console.warn('[motion] local + CDN both failed, disabling animations', e1, e2);
+    document.querySelectorAll('[data-anim]').forEach(el=>{el.style.opacity='1';el.style.transform='none'});
+    document.querySelectorAll('[data-animate="pipeline"] [data-anim]').forEach(el=>el.style.opacity='1');
+  }
+}
+
+if(motion){
+  const { animate, stagger } = motion;
+  document.body.classList.add('motion-ready');
+  const EASE = [.22, 1, .36, 1];
+  const slides = [...document.querySelectorAll('.slide')];
+  let pipeStep = -1;
+  let lastIdx = -1;
+
+  function resetAnims(slide){
+    slide.querySelectorAll('[data-anim]').forEach(el=>{
+      el.style.opacity='';
+      el.style.transform='';
+    });
+  }
+
+  function revealStatic(slide){
+    resetAnims(slide);
+    document.getAnimations?.().forEach(a=>a.cancel());
+    slide.querySelectorAll('[data-anim]').forEach(el=>{
+      el.style.opacity='1';
+      el.style.transform='none';
+    });
+  }
+
+  function playSlide(i){
+    const slide = slides[i];
+    if(!slide) return;
+    lastIdx = i;
+    const recipe = slide.dataset.animate || (slide.classList.contains('hero') ? 'hero' : 'cascade');
+
+    if(window.__lowPowerMode){
+      revealStatic(slide);
+      return;
+    }
+
+    if(recipe === 'pipeline'){
+      pipeStep = -1;
+      slide.querySelectorAll('[data-anim]').forEach(el=>{
+        el.style.opacity='0.15';
+        el.style.transform='none';
+      });
+      return;
+    }
+
+    resetAnims(slide);
+    const all = [...slide.querySelectorAll('[data-anim]')];
+    if(!all.length) return;
+
+    if(recipe === 'directional'){
+      const lefts  = all.filter(el=>el.dataset.anim==='left');
+      const divs   = all.filter(el=>el.dataset.anim==='divider');
+      const rights = all.filter(el=>el.dataset.anim==='right');
+      const others = all.filter(el=>!['left','right','divider'].includes(el.dataset.anim));
+      if(others.length) animate(others, {opacity:[0,1], y:[12,0]}, {duration:.6, delay:stagger(.1, {start:.15}), easing:EASE});
+      if(lefts.length)  animate(lefts,  {opacity:[0,1], x:[-24,0]}, {duration:.8, delay:.35, easing:EASE});
+      if(divs.length)   animate(divs,   {opacity:[0,.25]},          {duration:.5, delay:.9});
+      if(rights.length) animate(rights, {opacity:[0,1], x:[24,0]},  {duration:.8, delay:1.0, easing:EASE});
+      return;
+    }
+
+    if(recipe === 'quote'){
+      const lines = all.filter(el=>el.dataset.anim==='line');
+      const others = all.filter(el=>el.dataset.anim!=='line');
+      if(others.length) animate(others, {opacity:[0,1], y:[8,0]},    {duration:.6, delay:stagger(.12, {start:.2}), easing:EASE});
+      if(lines.length)  animate(lines,  {opacity:[.35,1], y:[10,0]}, {duration:.8, delay:stagger(.55, {start:.5}), easing:EASE});
+      return;
+    }
+
+    if(recipe === 'hero'){
+      animate(all, {opacity:[0,1], y:[14,0]}, {duration:.9, delay:stagger(.16, {start:.2}), easing:EASE});
+      return;
+    }
+
+    // default: cascade
+    animate(all, {opacity:[0,1], y:[16,0]}, {duration:.75, delay:stagger(.1, {start:.15}), easing:EASE});
+  }
+
+  function pipeAdvance(){
+    if(window.__lowPowerMode) return false;
+    const slide = slides[lastIdx];
+    if(!slide || slide.dataset.animate !== 'pipeline') return false;
+    const steps  = [...slide.querySelectorAll('[data-anim="step"]')];
+    const arrows = [...slide.querySelectorAll('[data-anim="arrow"]')];
+    if(pipeStep >= steps.length - 1) return false;
+    pipeStep++;
+    animate(steps[pipeStep], {opacity:[0.15,1], y:[8,0]}, {duration:.5, easing:EASE});
+    if(pipeStep > 0 && arrows[pipeStep-1]){
+      animate(arrows[pipeStep-1], {opacity:[0.15,.7]}, {duration:.3, delay:.15});
+    }
+    return true;
+  }
+
+  window.__playSlide = playSlide;
+  window.__pipeAdvance = pipeAdvance;
+
+  // 首屏:go(0) 已跑过(同步),没来得及触发动效 → 这里补一下
+  playSlide(0);
+}
+</script>
+
+<script>
+/* ---- autofit：测量每页内容实际高度，超出可用区就整体等比缩到刚好装下 ----
+   slide 的 overflow:hidden 会裁掉溢出内容，字体/行高在不同分辨率下可能撑破版心，
+   这里做一道兜底：只在真的放不下时才缩，且下限 0.74，保证可读性。 */
+(function () {
+  function fit() {
+    var wasReady = document.body.classList.contains('motion-ready');
+    if (wasReady) document.body.classList.remove('motion-ready');  // 消除入场位移，量到真实布局
+    var slides = document.querySelectorAll('.slide');
+    for (var s = 0; s < slides.length; s++) {
+      var fb = slides[s].querySelector('.fitbox');
+      if (!fb) continue;
+      fb.style.transform = 'none';
+      var fr = fb.getBoundingClientRect();
+      if (fr.height < 10) continue;
+      var maxB = fr.top, maxR = fr.left;
+      var els = fb.querySelectorAll('*');
+      for (var i = 0; i < els.length; i++) {
+        var el = els[i], tag = el.tagName.toLowerCase();
+        if (tag === 'canvas' || tag === 'script' || tag === 'style') continue;
+        var st = getComputedStyle(el);
+        if (st.display === 'none' || st.visibility === 'hidden') continue;
+        if (tag !== 'img' && !el.textContent.trim()) continue;
+        var r = el.getBoundingClientRect();
+        if (r.width < 1 || r.height < 1) continue;
+        if (r.bottom > maxB) maxB = r.bottom;
+        if (r.right > maxR) maxR = r.right;
+      }
+      var needH = maxB - fr.top, needW = maxR - fr.left;
+      var k = Math.min(1, fr.height / needH, fr.width / needW);
+      if (!isFinite(k) || k <= 0) k = 1;
+      if (k > 0.995) k = 1;
+      if (k < 0.66) k = 0.66;
+      if (k < 1) fb.style.transform = 'scale(' + k.toFixed(4) + ')';
+      fb.dataset.fit = k.toFixed(3);
+    }
+    if (wasReady) document.body.classList.add('motion-ready');
+  }
+  window.__autofit = fit;
+  function boot() { fit(); setTimeout(fit, 400); setTimeout(fit, 1200); }
+  if (document.fonts && document.fonts.ready) document.fonts.ready.then(boot);
+  else window.addEventListener('load', boot);
+  window.addEventListener('resize', fit);
+})();
+</script>
+
+</body>
+</html>
