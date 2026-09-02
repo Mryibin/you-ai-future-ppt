@@ -1,0 +1,23 @@
+# 系统与编辑器垃圾
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+
+# 大体积二进制（网页版无需；离线 PPTX/PDF 由网页渲染导出）
+*.pptx
+*.pdf
+*.mp4
+
+# 导出过程产物
+out/
+frames/
+
+# 过程截图与体检脚本不入库
+shots/
+audit*.py
+audit*.txt
+shoot.py
+crop_watermark.py
+rename.sh
